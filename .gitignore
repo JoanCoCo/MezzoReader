@@ -1,2 +1,7 @@
 /obj/
 MezzoReader
+.DS_Store
+/images/.DS_Store
+/include/.DS_Store
+/source/.DS_Store
+/templates/.DS_Store
