@@ -12,7 +12,7 @@
 #include <iostream>
 #include <list>
 #include "../include/Staff.h"
-#include "../include/Utilities.h"
+#include "../include/MezzoUtilities.h"
 #include "../include/Note.h"
 
 using namespace std;
@@ -40,40 +40,43 @@ int main(int argc, char** argv)
     {
         gray = src;
     }
-    Utilities::show_wait_destroy("gray", gray);
+    MezzoUtilities::show_wait_destroy("gray", gray);
 
     Mat bw;
     adaptiveThreshold(~gray, bw, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY, 15, -2);
     //Utilities::show_wait_destroy("binary", bw);
     
-    list<Staff> staffsFound = Utilities::extract_all_staffs(bw);
+    list<Staff> staffsFound = MezzoUtilities::extract_all_staffs(bw);
 
     cout << staffsFound.size() << " staffs have been found." << endl;
 
     //Mat v = Utilities::erase_horizontal_lines(bw, (*staffsFound.begin()).get_space_between_lines() - 2);
     //Utilities::show_wait_destroy("V", v);
 
-    Mat results;
-    cvtColor(bw, results, COLOR_GRAY2BGR);
+    Mat results = src.clone();
 
     for(std::list<Staff>::iterator s = staffsFound.begin(); s != staffsFound.end(); s++) {
         for(int i = 0; i < 5; i++) {
             Point p1(0, (*s).get_line(i));
             Point p2(results.cols - 1, (*s).get_line(i));
-            cv::line(results, p1, p2, cv::Scalar(0,255,255), 1);
+            cv::line(results, p1, p2, Scalar(19,201,198), 2);
         }
 
-        list<Note> notes = Utilities::extract_notes(gray, *s, true);
+        list<Note> notes = MezzoUtilities::extract_notes(gray, *s, false);
 
         for(std::list<Note>::iterator n = notes.begin(); n != notes.end(); n++) {
             Point top((*n).x - (*s).get_space_between_lines(), (*n).y - (*s).get_space_between_lines());
             Point low((*n).x + (*s).get_space_between_lines(), (*n).y + (*s).get_space_between_lines());
-            cv::rectangle(results, top, low, cv::Scalar(0,255,0), 2);
-            cv::putText(results, (*n).get_note_name(), top + Point(0, 5 * (*s).get_space_between_lines()), FONT_HERSHEY_PLAIN, 1,  Scalar(0,255,0), 2);
+            cv::rectangle(results, top, low, Scalar(86,113,123), 2);
+            cv::putText(results, (*n).get_note_name(), top + Point(0, 5 * (*s).get_space_between_lines()), FONT_HERSHEY_PLAIN, 1,  Scalar(86,113,123), 2);
         }
     }
-    Utilities::show_wait_destroy("Results", results);
+    //Utilities::show_wait_destroy("Results", results);
     cv::imwrite("pentagrama_analizado.png", results);
+    for(std::list<Staff>::iterator s = staffsFound.begin(); s != staffsFound.end(); s++) {
+        Mat staffImage = MezzoUtilities::crop_staff_from_image(results, *s);
+        MezzoUtilities::show_wait_destroy("Staff", staffImage);
+    }
 
     return 0;
 }

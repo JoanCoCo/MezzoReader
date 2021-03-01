@@ -12,7 +12,6 @@
 #include <opencv2/highgui.hpp>
 #include <iostream>
 #include <list>
-#include "../include/Utilities.h"
 #include "../include/Staff.h"
 
 using namespace std;

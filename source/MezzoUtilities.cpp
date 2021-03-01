@@ -12,14 +12,14 @@
 #include <opencv2/highgui.hpp>
 #include <iostream>
 #include <list>
-#include "../include/Utilities.h"
+#include "../include/MezzoUtilities.h"
 #include "../include/Note.h"
 #include "../include/Staff.h"
 
 using namespace std;
 using namespace cv;
 
-list<int> Utilities::find_horizontal_lines ( Mat image ) {
+list<int> MezzoUtilities::find_horizontal_lines ( Mat image ) {
     Mat horizontal = image.clone();
     
     int horizontal_size = horizontal.cols / 30;
@@ -52,7 +52,7 @@ list<int> Utilities::find_horizontal_lines ( Mat image ) {
     return lines;
 }
 
-list<int> Utilities::filter_horizontal_lines ( list<int> lines) {
+list<int> MezzoUtilities::filter_horizontal_lines ( list<int> lines) {
     list <int> result;
     int previous = 0;
     int j = 0;
@@ -70,10 +70,10 @@ list<int> Utilities::filter_horizontal_lines ( list<int> lines) {
     return result;
 }
 
-list<Staff> Utilities::extract_all_staffs ( Mat image ) {
+list<Staff> MezzoUtilities::extract_all_staffs ( Mat image ) {
     list<Staff> staffs;
-    list<int> lines = Utilities::find_horizontal_lines(image);
-    lines = Utilities::filter_horizontal_lines(lines);
+    list<int> lines = MezzoUtilities::find_horizontal_lines(image);
+    lines = MezzoUtilities::filter_horizontal_lines(lines);
     if(lines.size() % 5 == 0) {
         int numOfStaffs = lines.size() % 5;
         int staffLines [5];
@@ -110,11 +110,11 @@ int get_note_tone(int y, Staff staff) {
     return (baseLine - y) / (spaceBetweenLines / 2);
 }
 
-list<Note> Utilities::extract_notes(Mat image, Staff staff, bool verbose) {
+list<Note> MezzoUtilities::extract_notes(Mat image, Staff staff, bool verbose) {
     
     list<Note> result;
     
-    int baseLine = staff.get_line(4);
+    /*int baseLine = staff.get_line(4);
     int spaceBetweenLines = staff.get_space_between_lines();
     
     if(verbose) cout << "Base line: " << baseLine << endl;
@@ -175,45 +175,57 @@ list<Note> Utilities::extract_notes(Mat image, Staff staff, bool verbose) {
         }
         inNote = false;
         someWhite = false;
+    }*/
+
+    Mat justStaffImage = MezzoUtilities::crop_staff_from_image(image, staff);
+
+    list<Point> wp = MezzoUtilities::find_matches(justStaffImage, "templates/white.png", 0.92, staff.get_space_between_lines(), verbose);
+    for(std::list<Point>::iterator i = wp.begin(); i != wp.end(); i++) {
+        int y = (*i).y + staff.get_upper_limit();
+        Note w = Note((*i).x, y, get_note_tone(y, staff), 2);
+        result.push_back(w);
     }
 
-    Mat justStaffImage = Utilities::crop_staff_from_image(image, staff);
-
-    list<Point> wp = Utilities::find_matches(justStaffImage, "templates/white.png", 0.92, spaceBetweenLines, verbose);
-    for(std::list<Point>::iterator i = wp.begin(); i != wp.end(); i++) {
-        Note w;
-        w.x = (*i).x;
-        w.y = (*i).y + staff.get_upper_limit();
-        w.tone = get_note_tone(w.y, staff);
-        result.push_back(w);
+    list<Point> bp = MezzoUtilities::find_matches(justStaffImage, "templates/black.png", 0.89, staff.get_space_between_lines() + 1, verbose);
+    for(std::list<Point>::iterator i = bp.begin(); i != bp.end(); i++) {
+        int y = (*i).y + staff.get_upper_limit();
+        Note b = Note((*i).x, y, get_note_tone(y, staff), 1);
+        result.push_back(b);
     }
     
     if(verbose) {
-        cvtColor(justStaffImage, justStaffImage, COLOR_GRAY2BGR);
+        Mat whiteResults, blackResults;
+        cvtColor(justStaffImage, whiteResults, COLOR_GRAY2BGR);
         for(std::list<Point>::iterator pw = wp.begin(); pw != wp.end(); pw++) {
-            cv::circle(justStaffImage, *(pw), 10, Scalar(0,0,255), 2);
+            cv::circle(whiteResults, *(pw), 10, Scalar(0,0,255), 2);
         }
-        Utilities::show_wait_destroy("Found positive white notes", justStaffImage);
+        MezzoUtilities::show_wait_destroy("Found positive white notes", whiteResults);
     
-        Mat d;
+        cvtColor(justStaffImage, blackResults, COLOR_GRAY2BGR);
+        for(std::list<Point>::iterator pb = bp.begin(); pb != bp.end(); pb++) {
+            cv::circle(blackResults, *(pb), 10, Scalar(0,0,255), 2);
+        }
+        MezzoUtilities::show_wait_destroy("Found positive black notes", blackResults);
+
+        /*Mat d;
         cvtColor(ellip, d, COLOR_GRAY2BGR);
         Point top(0, staff.get_upper_limit());
         Point low(d.cols - 1,staff.get_lower_limit());
         cv::rectangle(d, top, low, cv::Scalar(0,255,0), 3);
-        show_wait_destroy("d", d);
+        show_wait_destroy("d", d);*/
     }
     
     return result;
 }
 
-void Utilities::show_wait_destroy(const char* winname, cv::Mat img) {
+void MezzoUtilities::show_wait_destroy(const char* winname, cv::Mat img) {
     imshow(winname, img);
     moveWindow(winname, 500, 0);
     waitKey(0);
     destroyWindow(winname);
 }
 
-Mat Utilities::erase_horizontal_lines(Mat image, int size) {
+Mat MezzoUtilities::erase_horizontal_lines(Mat image, int size) {
     Mat result;
 
     // Create structure element for extracting vertical lines through morphology operations
@@ -230,7 +242,7 @@ bool compare_points(Point a, Point b) {
     return (a.x) < (b.x);
 }
 
-list<Point> Utilities::find_matches(Mat image, string templ, double thresh, int h, bool verbose) {
+list<Point> MezzoUtilities::find_matches(Mat image, string templ, double thresh, int h, bool verbose) {
 
     Mat temp = imread( samples::findFile(templ), IMREAD_COLOR);
     cvtColor(temp, temp, COLOR_BGR2GRAY);
@@ -240,16 +252,16 @@ list<Point> Utilities::find_matches(Mat image, string templ, double thresh, int 
     }
     if(verbose) {
         cout << "Template size" << Size(temp.cols, temp.rows) << endl;
-        Utilities::show_wait_destroy("Template", temp);
+        MezzoUtilities::show_wait_destroy("Template", temp);
     }
 
     Mat results;
     matchTemplate(image, temp, results, TM_CCORR_NORMED);
-    if(verbose) Utilities::show_wait_destroy("Matching", results);
+    if(verbose) MezzoUtilities::show_wait_destroy("Matching", results);
 
     Mat bw;
     threshold(results, bw, thresh, 255, THRESH_BINARY);
-    if(verbose) Utilities::show_wait_destroy("Matching", bw);
+    if(verbose) MezzoUtilities::show_wait_destroy("Matching", bw);
 
     double minVal; double maxVal; Point minLoc; Point maxLoc;
     minMaxLoc(bw, &minVal, &maxVal, &minLoc, &maxLoc, Mat() );
@@ -294,7 +306,7 @@ list<Point> Utilities::find_matches(Mat image, string templ, double thresh, int 
     }
 }
 
-Mat Utilities::crop_staff_from_image(Mat image, Staff staff, bool markIt, Mat *outMark) {
+Mat MezzoUtilities::crop_staff_from_image(Mat image, Staff staff, bool markIt, Mat *outMark) {
     Rect staffRect(Point(0, staff.get_upper_limit()), Point(image.cols, staff.get_lower_limit()));
     Mat staffImage = image(staffRect);
     if(markIt) cv::rectangle(*outMark, staffRect, Scalar(255,160,23), 2);

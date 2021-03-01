@@ -9,8 +9,8 @@
  * musical elements of an image.
  */
 
-#ifndef UTILITIES
-#define UTILITIES
+#ifndef MEZZOUTILITIES
+#define MEZZOUTILITIES
 
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
@@ -23,7 +23,7 @@
 using namespace std;
 using namespace cv;
 
-class Utilities {
+class MezzoUtilities {
     
 public:
 
@@ -94,12 +94,33 @@ public:
     static Mat erase_horizontal_lines(Mat image, int size);
 
     /**
+     * Finds the positions of the image where a template can be found. Implemented
+     * from the code at https://docs.opencv.org/3.4/de/da9/tutorial_template_matching.html.
      * 
+     * @param image cv::Mat image in gray scale to be processed.
+     * @param templ string containing the rute of the file system to the image template
+     *      we want to find.
+     * @param thresh threshold between 0 and 1 to be applied for the search, meaning that
+     *      positives will have to be higher or equal than the threshold to be considered.
+     * @param h optional positive int that is used for rescaling the template to match a 
+     *      height of h pixels. When its 0, it doesn't apply rescaling. It is 0 by default.
+     * @param verbose optional bool to choose if we want a verbose analysis that will show 
+     *      some aditional information about the matches found. It is set to false by 
+     *      default.
+     * @return list of Point inside the image where the template has been found.
      */
     static list<Point> find_matches(Mat image, string templ, double thresh, int h = 0, bool verbose = false);
 
     /**
+     * Gets a cropped image containing only the desired staff.
      * 
+     * @param image original cv::Mat image containing the staff.
+     * @param staff the Staff we want to obtain from the image.
+     * @param markIt optional bool that will draw a blue rectangle where the crop will be
+     *      applied. It is set to false by default.
+     * @param outMark optional pointer to a cv::Mat image. If markIt is true, then this 
+     *      image will be modified to mark with a blue rectangle where the crop will be
+     *      applied.
      */
     static Mat crop_staff_from_image(Mat image, Staff staff, bool markIt = false, Mat *outMark = nullptr);
 };

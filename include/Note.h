@@ -42,10 +42,26 @@ public:
     int y;
     /// Integer that represents the tone of the note measured as half-spaces.
     int tone;
-    /// Integer that represents the duration in time of the sound of the note.
-    int duration;
+    /// Double that represents the duration in time of the sound of the note.
+    double duration;
+    /// Bool to indicate if its a note or a silence.
+    bool isSilence;
 
 public:
+    /**
+     * Constructor of the class Note.
+     * 
+     * @param x horizontal coordinate of the note's position.
+     * @param y vertical coordinate of the note's position.
+     * @param tone integer that represents the tone of the note measured 
+     *      as half-spaces.
+     * @param duration double that represents the duration in time of 
+     *      the sound of the note.
+     * @param isSilence optional bool to indicate if its a note or a 
+     *      silence. It is set to false by default.
+     */
+    Note(int x, int y, int tone, double duration, bool isSilence = false);
+
     /**
      * Plays the note.
      */

@@ -17,6 +17,14 @@
 using namespace std;
 using namespace cv;
 
+Note::Note(int x, int y, int tone, double duration, bool isSilence) {
+    (*this).x = x;
+    (*this).y = y;
+    (*this).tone = tone;
+    (*this).duration = duration;
+    (*this).isSilence = isSilence;
+}
+
 void Note::play() { }
 
 string Note::get_note_name() {
