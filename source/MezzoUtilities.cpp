@@ -179,14 +179,14 @@ list<Note> MezzoUtilities::extract_notes(Mat image, Staff staff, bool verbose) {
 
     Mat justStaffImage = MezzoUtilities::crop_staff_from_image(image, staff);
 
-    list<Point> wp = MezzoUtilities::find_matches(justStaffImage, "templates/white.png", 0.92, staff.get_space_between_lines(), verbose);
+    list<Point> wp = MezzoUtilities::find_matches(justStaffImage, "templates/white2.png", 0.8, staff.get_space_between_lines(), verbose);
     for(std::list<Point>::iterator i = wp.begin(); i != wp.end(); i++) {
         int y = (*i).y + staff.get_upper_limit();
         Note w = Note((*i).x, y, get_note_tone(y, staff), 2);
         result.push_back(w);
     }
 
-    list<Point> bp = MezzoUtilities::find_matches(justStaffImage, "templates/black.png", 0.89, staff.get_space_between_lines() + 1, verbose);
+    list<Point> bp = MezzoUtilities::find_matches(justStaffImage, "templates/black2.png", 0.79, staff.get_space_between_lines()-1, verbose);
     for(std::list<Point>::iterator i = bp.begin(); i != bp.end(); i++) {
         int y = (*i).y + staff.get_upper_limit();
         Note b = Note((*i).x, y, get_note_tone(y, staff), 1);
