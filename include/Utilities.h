@@ -96,7 +96,12 @@ public:
     /**
      * 
      */
-    static list<Point> find_matches(Mat image, string templ, float thresh);
+    static list<Point> find_matches(Mat image, string templ, double thresh, int h = 0, bool verbose = false);
+
+    /**
+     * 
+     */
+    static Mat crop_staff_from_image(Mat image, Staff staff, bool markIt = false, Mat *outMark = nullptr);
 };
 
 #endif

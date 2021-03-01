@@ -104,6 +104,12 @@ list<Staff> Utilities::extract_all_staffs ( Mat image ) {
     return staffs;
 }
 
+int get_note_tone(int y, Staff staff) {
+    int baseLine = staff.get_line(4);
+    int spaceBetweenLines = staff.get_space_between_lines();
+    return (baseLine - y) / (spaceBetweenLines / 2);
+}
+
 list<Note> Utilities::extract_notes(Mat image, Staff staff, bool verbose) {
     
     list<Note> result;
@@ -111,18 +117,11 @@ list<Note> Utilities::extract_notes(Mat image, Staff staff, bool verbose) {
     int baseLine = staff.get_line(4);
     int spaceBetweenLines = staff.get_space_between_lines();
     
-    cout << "Base line: " << baseLine << endl;
+    if(verbose) cout << "Base line: " << baseLine << endl;
     
-    Mat ellip = image.clone();
+    Mat ellip;
+    adaptiveThreshold(~image, ellip, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY, 15, -2);
     Mat squareStructure = getStructuringElement(MORPH_ELLIPSE, Size(spaceBetweenLines - 1, spaceBetweenLines - 1));
-    Mat hole = getStructuringElement(MORPH_ELLIPSE, Size(spaceBetweenLines - 4, spaceBetweenLines - 4));
-    int diffr = (squareStructure.rows - hole.rows) / 2;
-    int diffc = (squareStructure.cols - hole.cols) / 2;
-    for(int i = 0; i < hole.rows; i++) {
-        for(int j = 0; j < hole.cols; j++) {
-            squareStructure.at<uchar>(i + diffr, j + diffc) = squareStructure.at<uchar>(i + diffr, j + diffc) - hole.at<uchar>(i, j);
-        }
-    }
 
     erode(ellip, ellip, squareStructure, Point(-1, -1));
     dilate(ellip, ellip, squareStructure, Point(-1, -1));
@@ -158,7 +157,7 @@ list<Note> Utilities::extract_notes(Mat image, Staff staff, bool verbose) {
             int x = ((right - left) / 2) + left;
             int y = ((down - up) / 2) + up;
             
-            int noteClass = (baseLine - y) / (spaceBetweenLines / 2);
+            int noteClass = get_note_tone(y, staff);
             
             Note n;
             n.x = x;
@@ -177,8 +176,25 @@ list<Note> Utilities::extract_notes(Mat image, Staff staff, bool verbose) {
         inNote = false;
         someWhite = false;
     }
+
+    Mat justStaffImage = Utilities::crop_staff_from_image(image, staff);
+
+    list<Point> wp = Utilities::find_matches(justStaffImage, "templates/white.png", 0.92, spaceBetweenLines, verbose);
+    for(std::list<Point>::iterator i = wp.begin(); i != wp.end(); i++) {
+        Note w;
+        w.x = (*i).x;
+        w.y = (*i).y + staff.get_upper_limit();
+        w.tone = get_note_tone(w.y, staff);
+        result.push_back(w);
+    }
     
-    if(verbose) { 
+    if(verbose) {
+        cvtColor(justStaffImage, justStaffImage, COLOR_GRAY2BGR);
+        for(std::list<Point>::iterator pw = wp.begin(); pw != wp.end(); pw++) {
+            cv::circle(justStaffImage, *(pw), 10, Scalar(0,0,255), 2);
+        }
+        Utilities::show_wait_destroy("Found positive white notes", justStaffImage);
+    
         Mat d;
         cvtColor(ellip, d, COLOR_GRAY2BGR);
         Point top(0, staff.get_upper_limit());
@@ -210,34 +226,77 @@ Mat Utilities::erase_horizontal_lines(Mat image, int size) {
     return result;
 }
 
-list<Point> Utilities::find_matches(Mat image, string templ, float thresh) {
+bool compare_points(Point a, Point b) {
+    return (a.x) < (b.x);
+}
+
+list<Point> Utilities::find_matches(Mat image, string templ, double thresh, int h, bool verbose) {
 
     Mat temp = imread( samples::findFile(templ), IMREAD_COLOR);
     cvtColor(temp, temp, COLOR_BGR2GRAY);
+    int margin = 2;
+    if(h > 0) {
+        resize(temp, temp, Size(temp.cols * (h + margin) / temp.rows, (h + margin)));
+    }
+    if(verbose) {
+        cout << "Template size" << Size(temp.cols, temp.rows) << endl;
+        Utilities::show_wait_destroy("Template", temp);
+    }
 
     Mat results;
-    int r_cols = image.cols - temp.cols + 1;
-    int r_rows = image.rows - temp.rows + 1;
-    results.create(r_rows, r_cols, CV_32FC1);
+    matchTemplate(image, temp, results, TM_CCORR_NORMED);
+    if(verbose) Utilities::show_wait_destroy("Matching", results);
 
-    matchTemplate(image, temp, results, TM_SQDIFF_NORMED);
-    Utilities::show_wait_destroy("Matching", results);
-
-    //threshold(results, results, thresh, 255, CV_THRESH_BINARY);
-    //Utilities::show_wait_destroy("Matching", results);
+    Mat bw;
+    threshold(results, bw, thresh, 255, THRESH_BINARY);
+    if(verbose) Utilities::show_wait_destroy("Matching", bw);
 
     double minVal; double maxVal; Point minLoc; Point maxLoc;
-    minMaxLoc(results, &minVal, &maxVal, &minLoc, &maxLoc, Mat() );
+    minMaxLoc(bw, &minVal, &maxVal, &minLoc, &maxLoc, Mat() );
 
     list<Point> resultl;
-    resultl.push_back(minLoc);
-    /*for(int i = 0; i < results.rows; i++) {
-        for(int j = 0; j < results.cols; j++) {
-            if(results.at<uchar>(i,j)) { 
-                resultl.push_back(Point(j, i));
+    while(maxVal > 0) {
+        if(verbose) cout << maxLoc << " -> " << maxVal << endl;
+        resultl.push_back(maxLoc);
+        bw.at<int>(maxLoc) = 0;
+        minMaxLoc(bw, &minVal, &maxVal, &minLoc, &maxLoc, Mat() );
+    }
+
+    if(resultl.size() > 0) {
+        list<Point> filterdResult;
+        resultl.sort(compare_points);
+        Point currentPoint = *(resultl.begin());
+        int aux = 1;
+        int dispy = temp.rows / 2;
+        int dispx = temp.cols / 2;
+        for(std::list<Point>::iterator i = std::next(resultl.begin(), 1); i != resultl.end(); i++) {
+            if((*std::prev(i, 1)).x + 3 > (*i).x) {
+                currentPoint.x = currentPoint.x + (*i).x;
+                currentPoint.y = currentPoint.y + (*i).y;
+                aux++;
+            } else {
+                currentPoint.x = (currentPoint.x / aux) + dispx;
+                currentPoint.y = (currentPoint.y / aux) + dispy;
+                filterdResult.push_back(currentPoint);
+                currentPoint = *i;
+                aux = 1;
             }
         }
-    }*/
+        
 
-    return resultl;
-} 
+        currentPoint.x = (currentPoint.x / aux) + dispx;
+        currentPoint.y = (currentPoint.y / aux) + dispy;
+        filterdResult.push_back(currentPoint);
+
+        return filterdResult;
+    } else {
+        return resultl;
+    }
+}
+
+Mat Utilities::crop_staff_from_image(Mat image, Staff staff, bool markIt, Mat *outMark) {
+    Rect staffRect(Point(0, staff.get_upper_limit()), Point(image.cols, staff.get_lower_limit()));
+    Mat staffImage = image(staffRect);
+    if(markIt) cv::rectangle(*outMark, staffRect, Scalar(255,160,23), 2);
+    return staffImage;
+}

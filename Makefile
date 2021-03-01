@@ -11,7 +11,12 @@ DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 _OBJ = Note.o Staff.o Utilities.o MezzoReader.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
-$(ODIR)/%.o: $(SDIR)/%.cpp $(DEPS)
+all: MezzoReader
+
+$(ODIR)/.:
+	mkdir -p $@
+
+$(ODIR)/%.o: $(SDIR)/%.cpp $(DEPS) $(ODIR)/.
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 MezzoReader: $(OBJ)

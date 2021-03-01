@@ -44,24 +44,16 @@ int main(int argc, char** argv)
 
     Mat bw;
     adaptiveThreshold(~gray, bw, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY, 15, -2);
-    Utilities::show_wait_destroy("binary", bw);
+    //Utilities::show_wait_destroy("binary", bw);
     
-    /*list<Staff> staffsFound = Utilities::extract_all_staffs(bw);
+    list<Staff> staffsFound = Utilities::extract_all_staffs(bw);
 
-    cout << staffsFound.size() << " staffs have been found." << endl;*/
+    cout << staffsFound.size() << " staffs have been found." << endl;
 
-    list<Point> p = Utilities::find_matches(bw, "Plantillas/plantilla_blanca.png", 0.51);
-    Mat results;
-    cvtColor(bw, results, COLOR_GRAY2BGR);
-    for(std::list<Point>::iterator i = p.begin(); i != p.end(); i++) {
-        cv::circle(results, *i, 5, cv::Scalar(0,255,0), 1);
-    }
-    Utilities::show_wait_destroy("Result", results);
-
-    //Mat v = Utilities::erase_horizontal_lines(bw, (*staffsFound.begin()).get_space_between_lines() * 4);
+    //Mat v = Utilities::erase_horizontal_lines(bw, (*staffsFound.begin()).get_space_between_lines() - 2);
     //Utilities::show_wait_destroy("V", v);
 
-    /*Mat results;
+    Mat results;
     cvtColor(bw, results, COLOR_GRAY2BGR);
 
     for(std::list<Staff>::iterator s = staffsFound.begin(); s != staffsFound.end(); s++) {
@@ -70,7 +62,9 @@ int main(int argc, char** argv)
             Point p2(results.cols - 1, (*s).get_line(i));
             cv::line(results, p1, p2, cv::Scalar(0,255,255), 1);
         }
-        list<Note> notes = Utilities::extract_notes(bw, *s, true);
+
+        list<Note> notes = Utilities::extract_notes(gray, *s, true);
+
         for(std::list<Note>::iterator n = notes.begin(); n != notes.end(); n++) {
             Point top((*n).x - (*s).get_space_between_lines(), (*n).y - (*s).get_space_between_lines());
             Point low((*n).x + (*s).get_space_between_lines(), (*n).y + (*s).get_space_between_lines());
@@ -79,7 +73,7 @@ int main(int argc, char** argv)
         }
     }
     Utilities::show_wait_destroy("Results", results);
-    cv::imwrite("pentagrama_analizado.png", results);*/
+    cv::imwrite("pentagrama_analizado.png", results);
 
     return 0;
 }
