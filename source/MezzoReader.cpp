@@ -21,7 +21,7 @@ using namespace cv;
 int main(int argc, char** argv)
 {
 
-    CommandLineParser parser(argc, argv, "{@input | notes.png | input image}");
+    CommandLineParser parser(argc, argv, "{@input | images/notation.png | input image}");
     Mat src = imread( samples::findFile( parser.get<String>("@input") ), IMREAD_COLOR);
     if (src.empty())
     {
@@ -62,7 +62,7 @@ int main(int argc, char** argv)
             cv::line(results, p1, p2, Scalar(19,201,198), 2);
         }
 
-        list<Note> notes = MezzoUtilities::extract_notes(gray, *s, false);
+        list<Note> notes = MezzoUtilities::extract_notes(gray, *s, true);
 
         for(std::list<Note>::iterator n = notes.begin(); n != notes.end(); n++) {
             Point top((*n).x - (*s).get_space_between_lines(), (*n).y - (*s).get_space_between_lines());

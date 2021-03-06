@@ -15,6 +15,7 @@
 #include "../include/MezzoUtilities.h"
 #include "../include/Note.h"
 #include "../include/Staff.h"
+#include "../include/Templates.h"
 
 using namespace std;
 using namespace cv;
@@ -179,40 +180,24 @@ list<Note> MezzoUtilities::extract_notes(Mat image, Staff staff, bool verbose) {
 
     Mat justStaffImage = MezzoUtilities::crop_staff_from_image(image, staff);
 
-    list<Point> wp = MezzoUtilities::find_matches(justStaffImage, "templates/white2.png", 0.8, staff.get_space_between_lines(), verbose);
-    for(std::list<Point>::iterator i = wp.begin(); i != wp.end(); i++) {
-        int y = (*i).y + staff.get_upper_limit();
-        Note w = Note((*i).x, y, get_note_tone(y, staff), 2);
-        result.push_back(w);
-    }
+    for(int i = 0; i < NUMBER_OF_SYMBOLS; i++) {
+        if(verbose) cout << "Showing " << SYMBOL[i] << " positive matches." << endl ;
 
-    list<Point> bp = MezzoUtilities::find_matches(justStaffImage, "templates/black2.png", 0.79, staff.get_space_between_lines()-1, verbose);
-    for(std::list<Point>::iterator i = bp.begin(); i != bp.end(); i++) {
-        int y = (*i).y + staff.get_upper_limit();
-        Note b = Note((*i).x, y, get_note_tone(y, staff), 1);
-        result.push_back(b);
-    }
-    
-    if(verbose) {
-        Mat whiteResults, blackResults;
-        cvtColor(justStaffImage, whiteResults, COLOR_GRAY2BGR);
-        for(std::list<Point>::iterator pw = wp.begin(); pw != wp.end(); pw++) {
-            cv::circle(whiteResults, *(pw), 10, Scalar(0,0,255), 2);
+        list<Point> wp = MezzoUtilities::find_matches(justStaffImage, SYMBOL[i], THRESHOLD[i], staff.get_space_between_lines() - SCALE_CORRECTION_FACTOR[i], verbose);
+        for(std::list<Point>::iterator j = wp.begin(); j != wp.end(); j++) {
+            int y = (*j).y + staff.get_upper_limit();
+            Note w = Note((*j).x, y, get_note_tone(y, staff), 2);
+            result.push_back(w);
         }
-        MezzoUtilities::show_wait_destroy("Found positive white notes", whiteResults);
-    
-        cvtColor(justStaffImage, blackResults, COLOR_GRAY2BGR);
-        for(std::list<Point>::iterator pb = bp.begin(); pb != bp.end(); pb++) {
-            cv::circle(blackResults, *(pb), 10, Scalar(0,0,255), 2);
-        }
-        MezzoUtilities::show_wait_destroy("Found positive black notes", blackResults);
 
-        /*Mat d;
-        cvtColor(ellip, d, COLOR_GRAY2BGR);
-        Point top(0, staff.get_upper_limit());
-        Point low(d.cols - 1,staff.get_lower_limit());
-        cv::rectangle(d, top, low, cv::Scalar(0,255,0), 3);
-        show_wait_destroy("d", d);*/
+        if(verbose) {
+            Mat whiteResults;
+            cvtColor(justStaffImage, whiteResults, COLOR_GRAY2BGR);
+            for(std::list<Point>::iterator pw = wp.begin(); pw != wp.end(); pw++) {
+                cv::circle(whiteResults, *(pw), 10, Scalar(0,0,255), 2);
+            }
+            MezzoUtilities::show_wait_destroy("Found positive symbols", whiteResults);
+        }
     }
     
     return result;
