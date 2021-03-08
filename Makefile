@@ -5,7 +5,7 @@ CFLAGS=`pkg-config --cflags --libs opencv`
 ODIR=obj
 SDIR=source
 
-_DEPS = Note.h Staff.h MezzoUtilities.h
+_DEPS = Note.h Staff.h MezzoUtilities.h Templates.h
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
 _OBJ = Note.o Staff.o MezzoUtilities.o MezzoReader.o

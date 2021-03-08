@@ -44,14 +44,10 @@ int main(int argc, char** argv)
 
     Mat bw;
     adaptiveThreshold(~gray, bw, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY, 15, -2);
-    //Utilities::show_wait_destroy("binary", bw);
     
     list<Staff> staffsFound = MezzoUtilities::extract_all_staffs(bw);
 
     cout << staffsFound.size() << " staffs have been found." << endl;
-
-    //Mat v = Utilities::erase_horizontal_lines(bw, (*staffsFound.begin()).get_space_between_lines() - 2);
-    //Utilities::show_wait_destroy("V", v);
 
     Mat results = src.clone();
 
@@ -69,6 +65,8 @@ int main(int argc, char** argv)
             Point low((*n).x + (*s).get_space_between_lines(), (*n).y + (*s).get_space_between_lines());
             cv::rectangle(results, top, low, Scalar(86,113,123), 2);
             cv::putText(results, (*n).get_note_name(), top + Point(0, 5 * (*s).get_space_between_lines()), FONT_HERSHEY_PLAIN, 1,  Scalar(86,113,123), 2);
+            //cv::putText(results, to_string((*n).tone), top + Point(0, 5 * (*s).get_space_between_lines()), FONT_HERSHEY_PLAIN, 1,  Scalar(86,113,123), 2);
+            results.at<Vec3b>(Point((*n).x, (*n).y)) = Vec3b(0, 0, 255);
         }
     }
     //Utilities::show_wait_destroy("Results", results);

@@ -16,6 +16,7 @@
 #include "../include/Note.h"
 #include "../include/Staff.h"
 #include "../include/Templates.h"
+#include <math.h>
 
 using namespace std;
 using namespace cv;
@@ -105,10 +106,12 @@ list<Staff> MezzoUtilities::extract_all_staffs ( Mat image ) {
     return staffs;
 }
 
-int get_note_tone(int y, Staff staff) {
-    int baseLine = staff.get_line(4);
-    int spaceBetweenLines = staff.get_space_between_lines();
-    return (baseLine - y) / (spaceBetweenLines / 2);
+float get_note_tone(int y, Staff staff) {
+    float baseLine = (float) staff.get_line(4);
+    float spaceBetweenLines = (float) staff.get_space_between_lines();
+    float remapY = (baseLine - (float) y);
+    float unit = spaceBetweenLines / 2.0f;
+    return remapY / unit;
 }
 
 list<Note> MezzoUtilities::extract_notes(Mat image, Staff staff, bool verbose) {
@@ -183,11 +186,31 @@ list<Note> MezzoUtilities::extract_notes(Mat image, Staff staff, bool verbose) {
     for(int i = 0; i < NUMBER_OF_SYMBOLS; i++) {
         if(verbose) cout << "Showing " << SYMBOL[i] << " positive matches." << endl ;
 
-        list<Point> wp = MezzoUtilities::find_matches(justStaffImage, SYMBOL[i], THRESHOLD[i], staff.get_space_between_lines() - SCALE_CORRECTION_FACTOR[i], verbose);
+        list<Point> wp = MezzoUtilities::find_matches(justStaffImage, SYMBOL[i], THRESHOLD[i], ((float) staff.get_space_between_lines()) * SCALE[i] - SCALE_CORRECTION_FACTOR[i], verbose);
         for(std::list<Point>::iterator j = wp.begin(); j != wp.end(); j++) {
             int y = (*j).y + staff.get_upper_limit();
-            Note w = Note((*j).x, y, get_note_tone(y, staff), 2);
+            Note w = Note((*j).x, y, (int) roundf(get_note_tone(y, staff)), 2);
             result.push_back(w);
+
+            /*if(SYMBOL[i] == BLACK_NOTE_TEMPLATE) {
+                Point c1, c2;
+                if(j == wp.begin()) {
+                    c1 = Point(0, 0);
+                } else {
+                    c1 = Point((*prev(j, 1)).x + staff.get_space_between_lines(), 0);
+                }
+                
+                if(next(j, 1) == wp.end()) {
+                    c2 = Point(justStaffImage.cols - 1, justStaffImage.rows - 1);
+                } else {
+                    c2 = Point2d((*next(j, 1)).x, justStaffImage.rows - 1);
+                }
+
+                Rect a(c1, c2);
+                cout << a << endl;
+                Mat noteArea = justStaffImage(a);
+                MezzoUtilities::show_wait_destroy("Note area", noteArea);
+            }*/
         }
 
         if(verbose) {
