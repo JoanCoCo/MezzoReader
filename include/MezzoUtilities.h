@@ -33,10 +33,13 @@ public:
      * https://docs.opencv.org/master/dd/dd7/tutorial_morph_lines_detection.html.
      * 
      * @param image the cv::Mat image to be analized.
+     * @param verbose optional bool to choose if we want a verbose analysis that will show 
+     *      some aditional information about the matches found. It is set to false by 
+     *      default.
      * @return list of integer representing the rows of the
      *      image where horizontal lines can be found.
      */
-    static list<int> find_horizontal_lines ( Mat image );
+    static list<int> find_horizontal_lines ( Mat image, bool verbose = false );
 
     /**
      * Process a set of horizontal lines to filter those who

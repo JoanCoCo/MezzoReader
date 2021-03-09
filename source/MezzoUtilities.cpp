@@ -21,7 +21,7 @@
 using namespace std;
 using namespace cv;
 
-list<int> MezzoUtilities::find_horizontal_lines ( Mat image ) {
+list<int> MezzoUtilities::find_horizontal_lines ( Mat image, bool verbose ) {
     Mat horizontal = image.clone();
     
     int horizontal_size = horizontal.cols / 30;
@@ -34,7 +34,7 @@ list<int> MezzoUtilities::find_horizontal_lines ( Mat image ) {
     dilate(horizontal, horizontal, horizontalStructure, Point(-1, -1));
     
     // Show extracted horizontal lines
-    //show_wait_destroy("horizontal", horizontal);
+    if(verbose) show_wait_destroy("horizontal", horizontal);
     //! [horiz]
     
     list <int> lines;
@@ -186,31 +186,69 @@ list<Note> MezzoUtilities::extract_notes(Mat image, Staff staff, bool verbose) {
     for(int i = 0; i < NUMBER_OF_SYMBOLS; i++) {
         if(verbose) cout << "Showing " << SYMBOL[i] << " positive matches." << endl ;
 
+        bool thisIsCorchera, nextIsCorchera = false;
         list<Point> wp = MezzoUtilities::find_matches(justStaffImage, SYMBOL[i], THRESHOLD[i], ((float) staff.get_space_between_lines()) * SCALE[i] - SCALE_CORRECTION_FACTOR[i], verbose);
         for(std::list<Point>::iterator j = wp.begin(); j != wp.end(); j++) {
             int y = (*j).y + staff.get_upper_limit();
-            Note w = Note((*j).x, y, (int) roundf(get_note_tone(y, staff)), 2);
-            result.push_back(w);
+            Note w = Note((*j).x, y, (int) roundf(get_note_tone(y, staff)), 0);
 
-            /*if(SYMBOL[i] == BLACK_NOTE_TEMPLATE) {
+            if(SYMBOL[i] == BLACK_NOTE_TEMPLATE) {
                 Point c1, c2;
-                if(j == wp.begin()) {
-                    c1 = Point(0, 0);
-                } else {
-                    c1 = Point((*prev(j, 1)).x + staff.get_space_between_lines(), 0);
-                }
-                
+                c1 = Point(w.x, 0);
+
                 if(next(j, 1) == wp.end()) {
                     c2 = Point(justStaffImage.cols - 1, justStaffImage.rows - 1);
                 } else {
-                    c2 = Point2d((*next(j, 1)).x, justStaffImage.rows - 1);
+                    //c2 = Point2d((*next(j, 1)).x, justStaffImage.rows - 1);
+                    c2 = Point(std::min(w.x + staff.get_space_between_lines() * 5, justStaffImage.cols - 1), justStaffImage.rows - 1);
                 }
 
                 Rect a(c1, c2);
-                cout << a << endl;
+                //cout << a << endl;
                 Mat noteArea = justStaffImage(a);
-                MezzoUtilities::show_wait_destroy("Note area", noteArea);
-            }*/
+                //MezzoUtilities::show_wait_destroy("Note area", noteArea);
+                Mat binaryArea;
+                adaptiveThreshold(~noteArea, binaryArea, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY, 15, -2);
+
+                Mat blockStructure = getStructuringElement(MORPH_RECT, Size(binaryArea.cols / 2, 3));
+                
+                // Apply morphology operations
+                erode(binaryArea, binaryArea, blockStructure, Point(-1, -1));
+                dilate(binaryArea, binaryArea, blockStructure, Point(-1, -1));
+                //MezzoUtilities::show_wait_destroy("Lines in note's area", binaryArea);
+
+                bool toBreak = false;
+                thisIsCorchera = false;
+                int whiteInLine = 0;
+                for(int g = 0; g < binaryArea.rows && !toBreak; g++) {
+                    for(int h = 0; h < binaryArea.cols && !toBreak; h++) {
+                        whiteInLine += (int) binaryArea.at<uchar>(g, h) / 255;
+                    }
+                    if(((float) whiteInLine) >= 0.75f * ((float) binaryArea.cols)) {
+                        nextIsCorchera = true;
+                        thisIsCorchera = true;
+                        toBreak = true;
+                        whiteInLine = 0;
+                    }
+                }
+
+                if(thisIsCorchera) {
+                    //cout << "A corchera has been found." << endl;
+                    w.duration = 0.25;
+                } else if(nextIsCorchera) {
+                    //cout << "A corchera has been found." << endl;
+                    nextIsCorchera = false;
+                    w.duration = 0.25;
+                } else {
+                    w.duration = 1.0;
+                }
+            } else if(SYMBOL[i] == WHITE_NOTE_TEMPLATE) {
+                w.duration = 2.0;
+            } else if(SYMBOL[i] == ROUND_NOTE_TEMPLATE) {
+                w.duration = 4.0;
+            }
+
+            result.push_back(w);
         }
 
         if(verbose) {

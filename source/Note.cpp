@@ -65,7 +65,11 @@ string Note::get_note_name() {
     default:
         break;
     }
+    name.append("(");
     name.append(std::to_string(s));
+    name.append(":");
+    name.append(std::to_string((int) (duration * 100.0)));
+    name.append(")");
     return name;
 }
 

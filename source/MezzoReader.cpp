@@ -58,7 +58,7 @@ int main(int argc, char** argv)
             cv::line(results, p1, p2, Scalar(19,201,198), 2);
         }
 
-        list<Note> notes = MezzoUtilities::extract_notes(gray, *s, true);
+        list<Note> notes = MezzoUtilities::extract_notes(gray, *s, false);
 
         for(std::list<Note>::iterator n = notes.begin(); n != notes.end(); n++) {
             Point top((*n).x - (*s).get_space_between_lines(), (*n).y - (*s).get_space_between_lines());
