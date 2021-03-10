@@ -63,9 +63,13 @@ int main(int argc, char** argv)
         for(std::list<Note>::iterator n = notes.begin(); n != notes.end(); n++) {
             Point top((*n).x - (*s).get_space_between_lines(), (*n).y - (*s).get_space_between_lines());
             Point low((*n).x + (*s).get_space_between_lines(), (*n).y + (*s).get_space_between_lines());
-            cv::rectangle(results, top, low, Scalar(86,113,123), 2);
-            cv::putText(results, (*n).get_note_name(), top + Point(0, 5 * (*s).get_space_between_lines()), FONT_HERSHEY_PLAIN, 1,  Scalar(86,113,123), 2);
+            //cv::putText(results, (*n).get_note_name(), top + Point(0, 5 * (*s).get_space_between_lines()), FONT_HERSHEY_PLAIN, 1,  Scalar(86,113,123), 2);
             //cv::putText(results, to_string((*n).tone), top + Point(0, 5 * (*s).get_space_between_lines()), FONT_HERSHEY_PLAIN, 1,  Scalar(86,113,123), 2);
+            if((*n).duration < 1) {
+                cv::rectangle(results, top, low, Scalar(11,221,123), 2);
+            } else {
+                cv::rectangle(results, top, low, Scalar(86,113,123), 2);
+            }
             results.at<Vec3b>(Point((*n).x, (*n).y)) = Vec3b(0, 0, 255);
         }
     }

@@ -197,25 +197,25 @@ list<Note> MezzoUtilities::extract_notes(Mat image, Staff staff, bool verbose) {
                 c1 = Point(w.x, 0);
 
                 if(next(j, 1) == wp.end()) {
-                    c2 = Point(justStaffImage.cols - 1, justStaffImage.rows - 1);
+                    c2 = Point(std::min(w.x + staff.get_space_between_lines() * 5, justStaffImage.cols - 1), justStaffImage.rows - 1);
                 } else {
                     //c2 = Point2d((*next(j, 1)).x, justStaffImage.rows - 1);
-                    c2 = Point(std::min(w.x + staff.get_space_between_lines() * 5, justStaffImage.cols - 1), justStaffImage.rows - 1);
+                    c2 = Point(std::min(w.x + staff.get_space_between_lines() * 5, (*next(j,1)).x), justStaffImage.rows - 1);
                 }
 
                 Rect a(c1, c2);
                 //cout << a << endl;
                 Mat noteArea = justStaffImage(a);
-                //MezzoUtilities::show_wait_destroy("Note area", noteArea);
+                MezzoUtilities::show_wait_destroy("Note area", noteArea);
                 Mat binaryArea;
                 adaptiveThreshold(~noteArea, binaryArea, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY, 15, -2);
 
-                Mat blockStructure = getStructuringElement(MORPH_RECT, Size(binaryArea.cols / 2, 3));
+                Mat blockStructure = getStructuringElement(MORPH_RECT, Size(binaryArea.cols, staff.get_space_between_lines() / 2 - 1));
                 
                 // Apply morphology operations
                 erode(binaryArea, binaryArea, blockStructure, Point(-1, -1));
                 dilate(binaryArea, binaryArea, blockStructure, Point(-1, -1));
-                //MezzoUtilities::show_wait_destroy("Lines in note's area", binaryArea);
+                MezzoUtilities::show_wait_destroy("Lines in note's area", binaryArea);
 
                 bool toBreak = false;
                 thisIsCorchera = false;

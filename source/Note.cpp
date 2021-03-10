@@ -42,34 +42,32 @@ string Note::get_note_name() {
     switch (t)
     {
     case DO:
-        name = "Do";
+        name = "D";
         break;
     case RE:
-        name = "Re";
+        name = "R";
         break;
     case MI:
-        name = "Mi";
+        name = "M";
         break;
     case FA:
-        name = "Fa";
+        name = "F";
         break;
     case SOL:
-        name = "Sol";
+        name = "Sl";
         break;
     case LA:
-        name = "La";
+        name = "L";
         break;
     case SI:
-        name = "Si";
+        name = "S";
         break;
     default:
         break;
     }
-    name.append("(");
     name.append(std::to_string(s));
     name.append(":");
     name.append(std::to_string((int) (duration * 100.0)));
-    name.append(")");
     return name;
 }
 
