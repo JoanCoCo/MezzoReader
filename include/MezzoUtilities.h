@@ -85,6 +85,17 @@ public:
     static void show_wait_destroy(const char* winname, cv::Mat img);
 
     /**
+     * Creates a new window to display an image that will wait rertain
+     * amount of time. This function was extracted from the example at
+     * https://docs.opencv.org/master/dd/dd7/tutorial_morph_lines_detection.html.
+     * 
+     * @param winname string that represents the name of the window
+     *      created.
+     * @param img cv::Mat image to be displayed.
+     */
+    static void show_wait_time_destroy(const char* winname, cv::Mat img);
+
+    /**
      * Erases the horizontal lines of an image. Implemented from the code at
      * https://docs.opencv.org/master/dd/dd7/tutorial_morph_lines_detection.html.
      * 
@@ -126,6 +137,28 @@ public:
      *      applied.
      */
     static Mat crop_staff_from_image(Mat image, Staff staff, bool markIt = false, Mat *outMark = nullptr);
+
+    /**
+     * Gets the most suitable template found in the image.
+     * 
+     * @param image cv::Mat containing a shape to match with the templates.
+     * @param h integer representing the reference height for the templates.
+     * @return integer representing the template that gave a higher score, or -1 if none
+     *      of the templates matched with the image provided.
+     */
+    static Vec3i find_most_suitable_template(Mat image, int h);
+
+    /**
+     * Gets all the notes contained on the staff of an image.
+     * 
+     * @param image cv::Mat image containing the staff whose notes
+     *      want to be extracted.
+     * @param staff staff whose notes we want to obtain.
+     * @param verbose optional bool to choose if we want a verbose 
+     *      analisis that will show some aditional information about
+     *      the notes found. It is set to false by default.
+     */
+    static list<Note> extract_notes_v2(Mat image, Staff staff, bool verbose = false);
 };
 
 #endif

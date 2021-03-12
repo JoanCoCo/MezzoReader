@@ -46,6 +46,7 @@ public:
     double duration;
     /// Bool to indicate if its a note or a silence.
     bool isSilence;
+    /// List of durations of the different notes and silences.
 
 public:
     /**

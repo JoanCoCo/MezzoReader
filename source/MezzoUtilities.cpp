@@ -271,6 +271,13 @@ void MezzoUtilities::show_wait_destroy(const char* winname, cv::Mat img) {
     destroyWindow(winname);
 }
 
+void MezzoUtilities::show_wait_time_destroy(const char* winname, cv::Mat img) {
+    imshow(winname, img);
+    moveWindow(winname, 500, 0);
+    waitKey(1);
+    destroyWindow(winname);
+}
+
 Mat MezzoUtilities::erase_horizontal_lines(Mat image, int size) {
     Mat result;
 
@@ -357,4 +364,60 @@ Mat MezzoUtilities::crop_staff_from_image(Mat image, Staff staff, bool markIt, M
     Mat staffImage = image(staffRect);
     if(markIt) cv::rectangle(*outMark, staffRect, Scalar(255,160,23), 2);
     return staffImage;
+}
+
+Vec3i MezzoUtilities::find_most_suitable_template(Mat image, int h) {
+    double maxV = 0;
+    int maxI = -1, x = -1, y = -1;
+    for(int i = 0; i < NUMBER_OF_SYMBOLS; i++) {
+        Mat temp = imread( samples::findFile(SYMBOL[i]), IMREAD_COLOR);
+        cvtColor(temp, temp, COLOR_BGR2GRAY);
+        int margin = 2;
+        int hr = (((float) h) * SCALE[i]) - SCALE_CORRECTION_FACTOR[i];
+        resize(temp, temp, Size(temp.cols * (hr + margin) / temp.rows, (hr + margin)));
+        if(temp.rows <= image.rows && temp.cols <= image.cols) {
+            Mat results;
+            matchTemplate(image, temp, results, TM_CCORR_NORMED);
+            double minVal; double maxVal; Point minLoc; Point maxLoc;
+            minMaxLoc(results, &minVal, &maxVal, &minLoc, &maxLoc, Mat() );
+            if(maxV < maxVal && maxVal >= THRESHOLD[i]) {
+                maxV = maxVal;
+                maxI = i;
+                x = maxLoc.x + temp.cols / 2;
+                y = maxLoc.y + temp.rows / 2;
+            }
+        }
+    }
+    return Vec3i(maxI, x, y);
+}
+
+list<Note> MezzoUtilities::extract_notes_v2(Mat image, Staff staff, bool verbose) {
+    list<Note> result;
+    Mat staffImage = crop_staff_from_image(image, staff);
+    Point start;
+    Point end;
+    start = Point(0, 0);
+    end = Point(1, staffImage.rows - 1);
+    while(end.x < staffImage.cols) {
+        Mat cell = staffImage(Rect(start, end));
+        if(verbose) MezzoUtilities::show_wait_time_destroy("Cell", cell);
+        int templateFound, cellX, cellY;
+        Vec3i findings = MezzoUtilities::find_most_suitable_template(cell, staff.get_space_between_lines());
+        templateFound = findings[0];
+        cellX = findings[1];
+        cellY = findings[2];
+        if(templateFound >= 0) {
+            int y = cellY + staff.get_upper_limit(); 
+            int x = cellX + start.x;
+            Note n = Note(x, y, (int) roundf(get_note_tone(y, staff)), 1.0f);
+            result.push_back(n);
+            if(verbose) cout << "New symbol was fount at " << Point(x, y) << " -> " << SYMBOL[templateFound] << endl; 
+            start.x = end.x;
+        } else {
+            //if(verbose) cout << "No symbol found" << endl;
+        }
+        end.x += 1;
+        cout << (int)(((float) end.x) * 100.0f / ((float) staffImage.cols)) << "%" << endl;
+    }
+    return result;
 }
