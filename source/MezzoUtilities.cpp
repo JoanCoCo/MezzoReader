@@ -95,7 +95,7 @@ list<Staff> MezzoUtilities::extract_all_staffs ( Mat image ) {
                         staffs.push_back(Staff(staffLines, (staffLines[0] - *std::prev(j, 5))/2, (*std::next(j, 1) - staffLines[4])/2));
                     }
                 } else {
-                    staffs.push_back(Staff(staffLines));
+                    staffs.push_back(Staff(staffLines, 0, image.rows - 1));
                 }
                 i = 0;
                 c++;
@@ -370,11 +370,11 @@ Mat MezzoUtilities::crop_staff_from_image(Mat image, Staff staff, bool markIt, M
     return staffImage;
 }
 
-Vec3i MezzoUtilities::find_most_suitable_template(Mat image, int h) {
+Vec3i find_most_suitable_template_from(Symbol *symbols, int len, Mat image, int h) {
     double maxV = 0;
     int maxI = -1, x = -1, y = -1;
-    for(int i = 0; i < NUMBER_OF_SYMBOLS; i++) {
-        Symbol symbol = SYMBOLS[i];
+    for(int i = 0; i < len; i++) {
+        Symbol symbol = symbols[i];
         Mat temp = imread( samples::findFile(symbol.get_source_template()), IMREAD_COLOR);
         cvtColor(temp, temp, COLOR_BGR2GRAY);
         int margin = 2;
@@ -396,6 +396,14 @@ Vec3i MezzoUtilities::find_most_suitable_template(Mat image, int h) {
     return Vec3i(maxI, x, y);
 }
 
+Vec3i MezzoUtilities::find_most_suitable_template(Mat image, int h) {
+    return find_most_suitable_template_from(SYMBOLS, NUMBER_OF_SYMBOLS, image, h);
+}
+
+Vec3i identify_quaver_tail(Mat image, int h) {
+    return find_most_suitable_template_from(QUAVER_TRAITS, 2, image, h);
+}
+
 list<Note> MezzoUtilities::extract_notes_v2(Mat image, Staff staff, bool verbose) {
     list<Note> result;
     Mat staffImage = crop_staff_from_image(image, staff);
@@ -403,6 +411,7 @@ list<Note> MezzoUtilities::extract_notes_v2(Mat image, Staff staff, bool verbose
     Point end;
     start = Point(0, 0);
     end = Point(1, staffImage.rows - 1);
+    bool quaverCandidate = false;
     while(end.x < staffImage.cols) {
         Mat cell = staffImage(Rect(start, end));
         if(verbose) MezzoUtilities::show_wait_time_destroy("Cell", cell);
@@ -411,13 +420,96 @@ list<Note> MezzoUtilities::extract_notes_v2(Mat image, Staff staff, bool verbose
         templateFound = findings[0];
         cellX = findings[1];
         cellY = findings[2];
+        bool previousQuaverCatched = false;
+        bool barMethodFailed = true;
         if(templateFound >= 0) {
             int y = cellY + staff.get_upper_limit(); 
             int x = cellX + start.x;
-            Note n = Note(x, y, (int) roundf(get_note_tone(y, staff)), templateFound, SYMBOLS[templateFound].is_silence());
-            result.push_back(n);
+            Note n = Note(x, y, (int) roundf(get_note_tone(y, staff)), SYMBOLS[templateFound].get_id(), SYMBOLS[templateFound].is_silence());
+            if(quaverCandidate) {
+                if(verbose) cout << "Applying late quaver match method..." << endl;
+                Vec3i qtail = identify_quaver_tail(cell, staff.get_space_between_lines());
+                if(qtail[0] == QUAVER_TAIL_UP_ID) {
+                    Note pn = result.back();
+                    result.pop_back();
+                    pn.set_note_duration(QUAVER_NOTE_ID);
+                    result.push_back(pn);
+                    if(verbose) cout << "Quaver recognized by late match method" << endl;
+                    previousQuaverCatched = true;
+                }
+            }
             if(verbose) cout << "New symbol was fount at " << Point(x, y) << " -> " << SYMBOLS[templateFound].get_source_template() << endl; 
+            if(SYMBOLS[templateFound].get_id() == CROTCHET_NOTE_ID) {
+                if(quaverCandidate && !previousQuaverCatched) {
+                    if(verbose) cout << "Applying quaver bar method..." << endl;
+
+                    Mat binaryCell;
+                    adaptiveThreshold(~cell, binaryCell, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY, 15, -2);
+
+                    Mat vStructure = getStructuringElement(MORPH_RECT, Size(1, staff.get_space_between_lines() / 2 - 1));
+                    Mat hStructure = getStructuringElement(MORPH_RECT, Size(binaryCell.cols / 2, staff.get_space_between_lines() / 2 - 1));
+                    int d = staff.get_space_between_lines() / 2;
+                    for(int i = std::max(cellY - d, 0); i < std::min(cellY + d, binaryCell.rows); i++) {
+                        for(int j = std::max(cellX - d, 0); j < std::min(cellX + d, binaryCell.cols); j++) {
+                            binaryCell.at<int>(i, j) = 0;
+                        }
+                    }
+                    // Apply morphology operations
+                    //erode(binaryCell, binaryCell, vStructure, Point(-1, -1));
+                    //dilate(binaryCell, binaryCell, vStructure, Point(-1, -1));
+                    erode(binaryCell, binaryCell, hStructure, Point(-1, -1));
+                    dilate(binaryCell, binaryCell, hStructure, Point(-1, -1));
+                    //MezzoUtilities::show_wait_destroy("Lines in note's area", binaryCell);
+
+                    bool toBreak = false;
+                    int whiteInLine = 0;
+                    for(int g = 0; g < binaryCell.rows && !toBreak; g++) {
+                        for(int h = 0; h < binaryCell.cols && !toBreak; h++) {
+                            whiteInLine += (int) binaryCell.at<uchar>(g, h) / 255;
+                        }
+                        if(((float) whiteInLine) >= 1.5f * ((float) binaryCell.cols)) {
+                            toBreak = true;
+                            barMethodFailed = false;
+                            Note pn = result.back();
+                            result.pop_back();
+                            pn.set_note_duration(QUAVER_NOTE_ID);
+                            result.push_back(pn);
+                            n.set_note_duration(QUAVER_NOTE_ID);
+                            if(verbose) cout << "Quaver recognized by bar method" << endl;
+                        }
+                    }
+                } else {
+                    quaverCandidate = true;
+                }
+                
+                if(barMethodFailed) {
+                    if(verbose) cout << "Applying early quaver match method..." << endl;
+                    Vec3i qtail = identify_quaver_tail(cell, staff.get_space_between_lines());
+                    if(qtail[0] == QUAVER_TAIL_DOWN_ID) {
+                        quaverCandidate = false;
+                        n.set_note_duration(QUAVER_NOTE_ID);
+                        if(verbose) cout << "Quaver recognized by early match method" << endl;
+                    }
+                }
+            } else {
+                if(quaverCandidate) { 
+                    quaverCandidate = false;
+                }
+            }
+            result.push_back(n);
             start.x = end.x;
+        } else if(end.x > staffImage.cols - 2) {
+            if(quaverCandidate) {
+                if(verbose) cout << "Applying late quaver match method..." << endl;
+                Vec3i qtail = identify_quaver_tail(cell, staff.get_space_between_lines());
+                if(qtail[0] == QUAVER_TAIL_UP_ID) {
+                    Note pn = result.back();
+                    result.pop_back();
+                    pn.set_note_duration(QUAVER_NOTE_ID);
+                    result.push_back(pn);
+                    if(verbose) cout << "Quaver recognized by late match method" << endl;
+                }
+            }
         }
         end.x += 1;
         if(!verbose) cout << (int)(((float) end.x) * 100.0f / ((float) staffImage.cols)) << "%" << endl;

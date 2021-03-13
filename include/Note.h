@@ -77,6 +77,13 @@ public:
      * @return string representation of the note.
      */
     string get_note_name();
+
+    /**
+     * Sets the note duration.
+     * 
+     * @param symbolId integer representing the symbol of the note.
+     */
+    void set_note_duration(int symbolId);
 };
 
 #endif

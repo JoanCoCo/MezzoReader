@@ -23,7 +23,11 @@ Note::Note(int x, int y, int tone, int symbol, bool isSilence) {
     (*this).y = y;
     (*this).tone = tone;
     (*this).isSilence = isSilence;
-    switch (SYMBOLS[symbol].get_id())
+    Note::set_note_duration(symbol);
+}
+
+void Note::set_note_duration(int symbolId) {
+    switch (symbolId)
     {
     case CROTCHET_NOTE_ID:
         duration = 1.0;
@@ -43,7 +47,11 @@ Note::Note(int x, int y, int tone, int symbol, bool isSilence) {
     case SEMIBREVE_SILENCE_ID:
         duration = 4.0;
         break;
+    case QUAVER_NOTE_ID:
+        duration = 0.5;
+        break;
     default:
+        duration = 0.0;
         break;
     }
 }
