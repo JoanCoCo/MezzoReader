@@ -15,7 +15,8 @@
 #include "../include/MezzoUtilities.h"
 #include "../include/Note.h"
 #include "../include/Staff.h"
-#include "../include/Templates.h"
+#include "../include/Alphabet.h"
+#include "../include/Symbol.h"
 #include <math.h>
 
 using namespace std;
@@ -184,15 +185,18 @@ list<Note> MezzoUtilities::extract_notes(Mat image, Staff staff, bool verbose) {
     Mat justStaffImage = MezzoUtilities::crop_staff_from_image(image, staff);
 
     for(int i = 0; i < NUMBER_OF_SYMBOLS; i++) {
-        if(verbose) cout << "Showing " << SYMBOL[i] << " positive matches." << endl ;
+        if(verbose) cout << "Showing " << SYMBOLS[i].get_source_template() << " positive matches." << endl ;
 
         bool thisIsCorchera, nextIsCorchera = false;
-        list<Point> wp = MezzoUtilities::find_matches(justStaffImage, SYMBOL[i], THRESHOLD[i], ((float) staff.get_space_between_lines()) * SCALE[i] - SCALE_CORRECTION_FACTOR[i], verbose);
+        Symbol symbol = SYMBOLS[i];
+        list<Point> wp = MezzoUtilities::find_matches(justStaffImage, 
+            symbol.get_source_template(), symbol.get_threshold(), 
+            symbol.get_appropiate_pixel_scale(staff.get_space_between_lines()), verbose);
         for(std::list<Point>::iterator j = wp.begin(); j != wp.end(); j++) {
             int y = (*j).y + staff.get_upper_limit();
             Note w = Note((*j).x, y, (int) roundf(get_note_tone(y, staff)), 0);
 
-            if(SYMBOL[i] == BLACK_NOTE_TEMPLATE) {
+            if(symbol.get_id() == CROTCHET_NOTE_ID) {
                 Point c1, c2;
                 c1 = Point(w.x, 0);
 
@@ -242,9 +246,9 @@ list<Note> MezzoUtilities::extract_notes(Mat image, Staff staff, bool verbose) {
                 } else {
                     w.duration = 1.0;
                 }
-            } else if(SYMBOL[i] == WHITE_NOTE_TEMPLATE) {
+            } else if(symbol.get_id() == MINIM_NOTE_ID) {
                 w.duration = 2.0;
-            } else if(SYMBOL[i] == ROUND_NOTE_TEMPLATE) {
+            } else if(symbol.get_id() == SEMIBREVE_NOTE_ID) {
                 w.duration = 4.0;
             }
 
@@ -370,17 +374,18 @@ Vec3i MezzoUtilities::find_most_suitable_template(Mat image, int h) {
     double maxV = 0;
     int maxI = -1, x = -1, y = -1;
     for(int i = 0; i < NUMBER_OF_SYMBOLS; i++) {
-        Mat temp = imread( samples::findFile(SYMBOL[i]), IMREAD_COLOR);
+        Symbol symbol = SYMBOLS[i];
+        Mat temp = imread( samples::findFile(symbol.get_source_template()), IMREAD_COLOR);
         cvtColor(temp, temp, COLOR_BGR2GRAY);
         int margin = 2;
-        int hr = (((float) h) * SCALE[i]) - SCALE_CORRECTION_FACTOR[i];
+        int hr = symbol.get_appropiate_pixel_scale(h);
         resize(temp, temp, Size(temp.cols * (hr + margin) / temp.rows, (hr + margin)));
         if(temp.rows <= image.rows && temp.cols <= image.cols) {
             Mat results;
             matchTemplate(image, temp, results, TM_CCORR_NORMED);
             double minVal; double maxVal; Point minLoc; Point maxLoc;
             minMaxLoc(results, &minVal, &maxVal, &minLoc, &maxLoc, Mat() );
-            if(maxV < maxVal && maxVal >= THRESHOLD[i]) {
+            if(maxV < maxVal && maxVal >= symbol.get_threshold()) {
                 maxV = maxVal;
                 maxI = i;
                 x = maxLoc.x + temp.cols / 2;
@@ -409,15 +414,13 @@ list<Note> MezzoUtilities::extract_notes_v2(Mat image, Staff staff, bool verbose
         if(templateFound >= 0) {
             int y = cellY + staff.get_upper_limit(); 
             int x = cellX + start.x;
-            Note n = Note(x, y, (int) roundf(get_note_tone(y, staff)), 1.0f);
+            Note n = Note(x, y, (int) roundf(get_note_tone(y, staff)), templateFound, SYMBOLS[templateFound].is_silence());
             result.push_back(n);
-            if(verbose) cout << "New symbol was fount at " << Point(x, y) << " -> " << SYMBOL[templateFound] << endl; 
+            if(verbose) cout << "New symbol was fount at " << Point(x, y) << " -> " << SYMBOLS[templateFound].get_source_template() << endl; 
             start.x = end.x;
-        } else {
-            //if(verbose) cout << "No symbol found" << endl;
         }
         end.x += 1;
-        cout << (int)(((float) end.x) * 100.0f / ((float) staffImage.cols)) << "%" << endl;
+        if(!verbose) cout << (int)(((float) end.x) * 100.0f / ((float) staffImage.cols)) << "%" << endl;
     }
     return result;
 }

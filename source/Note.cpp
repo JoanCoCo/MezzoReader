@@ -13,16 +13,39 @@
 #include <iostream>
 #include <list>
 #include "../include/Note.h"
+#include "../include/Alphabet.h"
 
 using namespace std;
 using namespace cv;
 
-Note::Note(int x, int y, int tone, double duration, bool isSilence) {
+Note::Note(int x, int y, int tone, int symbol, bool isSilence) {
     (*this).x = x;
     (*this).y = y;
     (*this).tone = tone;
-    (*this).duration = duration;
     (*this).isSilence = isSilence;
+    switch (SYMBOLS[symbol].get_id())
+    {
+    case CROTCHET_NOTE_ID:
+        duration = 1.0;
+        break;
+    case MINIM_NOTE_ID:
+        duration = 2.0;
+        break;
+    case SEMIBREVE_NOTE_ID:
+        duration = 4.0;
+        break;
+    case CROTCHET_SILENCE_ID:
+        duration = 1.0;
+        break;
+    case MINIM_SILENCE_ID:
+        duration = 2.0;
+        break;
+    case SEMIBREVE_SILENCE_ID:
+        duration = 4.0;
+        break;
+    default:
+        break;
+    }
 }
 
 void Note::play() { }

@@ -75,7 +75,7 @@ public:
 
     /**
      * Creates a new window to display an image that will wait untill
-     * the user presses some key.This function was extracted from the 
+     * the user presses some key. This function was extracted from the 
      * example at https://docs.opencv.org/master/dd/dd7/tutorial_morph_lines_detection.html.
      * 
      * @param winname string that represents the name of the window

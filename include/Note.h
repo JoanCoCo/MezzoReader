@@ -56,12 +56,11 @@ public:
      * @param y vertical coordinate of the note's position.
      * @param tone integer that represents the tone of the note measured 
      *      as half-spaces.
-     * @param duration double that represents the duration in time of 
-     *      the sound of the note.
+     * @param symbol integer that represents the symbol.
      * @param isSilence optional bool to indicate if its a note or a 
      *      silence. It is set to false by default.
      */
-    Note(int x, int y, int tone, double duration, bool isSilence = false);
+    Note(int x, int y, int tone, int symbol, bool isSilence = false);
 
     /**
      * Plays the note.

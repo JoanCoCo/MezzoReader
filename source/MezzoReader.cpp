@@ -65,7 +65,7 @@ int main(int argc, char** argv)
             Point low((*n).x + (*s).get_space_between_lines(), (*n).y + (*s).get_space_between_lines());
             //cv::putText(results, (*n).get_note_name(), top + Point(0, 5 * (*s).get_space_between_lines()), FONT_HERSHEY_PLAIN, 1,  Scalar(86,113,123), 2);
             //cv::putText(results, to_string((*n).tone), top + Point(0, 5 * (*s).get_space_between_lines()), FONT_HERSHEY_PLAIN, 1,  Scalar(86,113,123), 2);
-            if((*n).duration < 1) {
+            if(!(*n).isSilence) {
                 cv::rectangle(results, top, low, Scalar(11,221,123), 2);
             } else {
                 cv::rectangle(results, top, low, Scalar(86,113,123), 2);
