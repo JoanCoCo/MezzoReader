@@ -22,6 +22,9 @@
 using namespace std;
 using namespace cv;
 
+static const int MAX_DELAY = 1000;
+int speed = MAX_DELAY - 1;
+
 list<int> MezzoUtilities::find_horizontal_lines ( Mat image, bool verbose ) {
     Mat horizontal = image.clone();
     
@@ -212,7 +215,7 @@ list<Note> MezzoUtilities::extract_notes(Mat image, Staff staff, bool verbose) {
                 Mat noteArea = justStaffImage(a);
                 MezzoUtilities::show_wait_destroy("Note area", noteArea);
                 Mat binaryArea;
-                adaptiveThreshold(~noteArea, binaryArea, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY, 15, -2);
+                adaptiveThreshold(noteArea, binaryArea, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY, 15, -2);
 
                 Mat blockStructure = getStructuringElement(MORPH_RECT, Size(binaryArea.cols, staff.get_space_between_lines() / 2 - 1));
                 
@@ -404,6 +407,10 @@ Vec3i identify_quaver_tail(Mat image, int h) {
     return find_most_suitable_template_from(QUAVER_TRAITS, 2, image, h);
 }
 
+void sliderChanged(int pos, void *userdata) {
+    speed = pos;
+}
+
 list<Note> MezzoUtilities::extract_notes_v2(Mat image, Staff staff, bool verbose) {
     list<Note> result;
     Mat staffImage = crop_staff_from_image(image, staff);
@@ -412,7 +419,25 @@ list<Note> MezzoUtilities::extract_notes_v2(Mat image, Staff staff, bool verbose
     start = Point(0, 0);
     end = Point(1, staffImage.rows - 1);
     bool quaverCandidate = false;
+    bool sliderIsCreated = false;
     while(end.x < staffImage.cols) {
+        Mat gOut = image.clone();
+        cvtColor(gOut, gOut, COLOR_GRAY2BGR);
+        cv::rectangle(gOut, 
+            Rect(Point(start.x, staff.get_upper_limit()), Point(end.x, staff.get_lower_limit())), 
+            Scalar(0,213,143), 2);
+        if(result.size() > 0) {
+            Note lastN = result.back();
+            MezzoUtilities::draw_note(&gOut, lastN, staff, true);
+        }
+        if(!sliderIsCreated) {
+            namedWindow("Reading...", CV_WINDOW_NORMAL);
+            createTrackbar("Speed", "Reading...", &speed, MAX_DELAY - 1, sliderChanged);
+            sliderIsCreated = true;
+        }
+        imshow("Reading...", gOut);
+        waitKey(MAX_DELAY - speed);
+
         Mat cell = staffImage(Rect(start, end));
         if(verbose) MezzoUtilities::show_wait_time_destroy("Cell", cell);
         int templateFound, cellX, cellY;
@@ -511,8 +536,25 @@ list<Note> MezzoUtilities::extract_notes_v2(Mat image, Staff staff, bool verbose
                 }
             }
         }
-        end.x += 1;
+        end.x += 5;
         if(!verbose) cout << (int)(((float) end.x) * 100.0f / ((float) staffImage.cols)) << "%" << endl;
     }
     return result;
+}
+
+void MezzoUtilities::draw_note(Mat* image, Note note, Staff staff, bool showDescription) {
+    Point top(note.x - staff.get_space_between_lines(), note.y - staff.get_space_between_lines());
+    Point low(note.x + staff.get_space_between_lines(), note.y + staff.get_space_between_lines());
+    if(showDescription) {
+        cv::putText(*image, note.get_note_name(), top + Point(0, 5 * staff.get_space_between_lines()), FONT_HERSHEY_PLAIN, 2,  Scalar(103,113,123), 2);
+        //cv::putText(*image, to_string(note.tone), top + Point(0, 5 * staff.get_space_between_lines()), FONT_HERSHEY_PLAIN, 1,  Scalar(86,113,123), 2);
+    }
+    if(note.isSilence) {
+        cv::rectangle(*image, top, low, Scalar(86,113,193), 2);
+    } else if(note.duration < 1) {
+        cv::rectangle(*image, top, low, Scalar(106,73,123), 2);
+    } else {
+        cv::rectangle(*image, top, low, Scalar(123,121,21), 2);
+    }
+    (*image).at<Vec3b>(Point(note.x, note.y)) = Vec3b(0, 0, 255);
 }

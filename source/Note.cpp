@@ -50,6 +50,9 @@ void Note::set_note_duration(int symbolId) {
     case QUAVER_NOTE_ID:
         duration = 0.5;
         break;
+    case QUAVER_SILENCE_ID:
+        duration = 0.5;
+        break;
     default:
         duration = 0.0;
         break;
@@ -70,34 +73,38 @@ string Note::get_note_name() {
         s = t / 7;
         t = t % 7;
     }
-    switch (t)
-    {
-    case DO:
-        name = "D";
-        break;
-    case RE:
-        name = "R";
-        break;
-    case MI:
-        name = "M";
-        break;
-    case FA:
-        name = "F";
-        break;
-    case SOL:
-        name = "Sl";
-        break;
-    case LA:
-        name = "L";
-        break;
-    case SI:
-        name = "S";
-        break;
-    default:
-        break;
+    if(isSilence) {
+        name = "Silence";
+    } else {
+        switch (t)
+        {
+        case DO:
+            name = "Do";
+            break;
+        case RE:
+            name = "Re";
+            break;
+        case MI:
+            name = "Mi";
+            break;
+        case FA:
+            name = "Fa";
+            break;
+        case SOL:
+            name = "Sol";
+            break;
+        case LA:
+            name = "La";
+            break;
+        case SI:
+            name = "Si";
+            break;
+        default:
+            break;
+        }
+        name.append(std::to_string(s));
     }
-    name.append(std::to_string(s));
-    name.append(":");
+    name.append(" : ");
     name.append(std::to_string((int) (duration * 100.0)));
     return name;
 }

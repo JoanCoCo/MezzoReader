@@ -40,7 +40,7 @@ int main(int argc, char** argv)
     {
         gray = src;
     }
-    MezzoUtilities::show_wait_destroy("gray", gray);
+    //MezzoUtilities::show_wait_destroy("gray", gray);
 
     Mat bw;
     adaptiveThreshold(~gray, bw, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY, 15, -2);
@@ -61,18 +61,7 @@ int main(int argc, char** argv)
         list<Note> notes = MezzoUtilities::extract_notes_v2(gray, *s, false);
 
         for(std::list<Note>::iterator n = notes.begin(); n != notes.end(); n++) {
-            Point top((*n).x - (*s).get_space_between_lines(), (*n).y - (*s).get_space_between_lines());
-            Point low((*n).x + (*s).get_space_between_lines(), (*n).y + (*s).get_space_between_lines());
-            //cv::putText(results, (*n).get_note_name(), top + Point(0, 5 * (*s).get_space_between_lines()), FONT_HERSHEY_PLAIN, 1,  Scalar(86,113,123), 2);
-            //cv::putText(results, to_string((*n).tone), top + Point(0, 5 * (*s).get_space_between_lines()), FONT_HERSHEY_PLAIN, 1,  Scalar(86,113,123), 2);
-            if((*n).isSilence) {
-                cv::rectangle(results, top, low, Scalar(86,113,193), 2);
-            } else if((*n).duration < 1) {
-                cv::rectangle(results, top, low, Scalar(106,73,123), 2);
-            } else {
-                cv::rectangle(results, top, low, Scalar(123,121,21), 2);
-            }
-            results.at<Vec3b>(Point((*n).x, (*n).y)) = Vec3b(0, 0, 255);
+            MezzoUtilities::draw_note(&results, *n, *s);
         }
     }
     //Utilities::show_wait_destroy("Results", results);
