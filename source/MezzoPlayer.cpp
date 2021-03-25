@@ -13,7 +13,7 @@
     #include <AL/alut.h>
 #endif
 #include <iostream>
-#include <list>
+#include <chrono>
 #include "../include/Note.h"
 #include "../include/MezzoPlayer.h"
 
@@ -41,7 +41,7 @@ MezzoPlayer::MezzoPlayer() {
     alSourcef(source, AL_GAIN, 1.0f);
     alSourcefv(source, AL_POSITION, sourcePosition);
     alSourcefv(source, AL_VELOCITY, sourceVelocity);
-    alSourcei(source, AL_LOOPING, AL_FALSE);
+    alSourcei(source, AL_LOOPING, AL_TRUE);
 
     error = alGetError();
     if(error) {
@@ -69,16 +69,30 @@ void MezzoPlayer::LoadBufferFromWAVFile(ALbyte* file) {
 }
 
 void MezzoPlayer::Play(Note note) {
-    if(!note.isSilence && errorFree) {
-        ALbyte* noteSoundFile = (ALbyte*) GetToneAudioFile(note.tone).c_str();
-        LoadBufferFromWAVFile(noteSoundFile);
-        alSourcef(source, AL_PITCH, 1.0f);
-        alSourcePlay(source);
+    if(errorFree) {
+        if(!note.isSilence) {
+            ALbyte* noteSoundFile = (ALbyte*) GetToneAudioFile(note.tone).c_str();
+            LoadBufferFromWAVFile(noteSoundFile);
+            float s = (float) *(note.tone_split(note.tone) + 1);
+            if(s >= 0) {
+                alSourcef(source, AL_PITCH, 1.0f + s);
+            } else {
+                alSourcef(source, AL_PITCH, 1.0f / (2.0f * s));
+            }
+            alSourcePlay(source);
+        }
+        auto start = chrono::steady_clock::now();
+        auto current = start;
+        while (chrono::duration_cast<chrono::milliseconds>(current - start).count() < 2000 * (note.duration/4.0f))
+        {
+            current = chrono::steady_clock::now();
+        }
+        if(!note.isSilence) Stop();
     }
 }
 
 string MezzoPlayer::GetToneAudioFile(int tone) {
-    string name = "sounds/";
+    string name = "sounds/pad/";
     int* pair = Note::tone_split(tone);
     int t = *(pair+0);
     int s = *(pair+1);

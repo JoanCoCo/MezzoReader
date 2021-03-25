@@ -1,6 +1,13 @@
 IDIR=include
 CC=g++
-LIBS=`pkg-config --cflags --libs opencv` -framework OpenAL
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Darwin)
+	CFLAGS=`pkg-config --cflags opencv --cflags`
+	LIBS=`pkg-config opencv --libs` -framework OpenAL
+else
+	CFLAGS=`pkg-config --cflags freealut opencv --cflags`
+	LIBS=`pkg-config freealut opencv --libs`
+endif
 
 ODIR=obj
 SDIR=source
@@ -17,13 +24,15 @@ $(ODIR)/.:
 	mkdir -p $@
 
 $(ODIR)/%.o: $(SDIR)/%.cpp $(DEPS) $(ODIR)/.
-	$(CC) -c -o $@ $< $(LIBS)
+	$(CC) -c -o $@ $< $(CFLAGS) $(LIBS)
 
 MezzoReader: $(OBJ)
-	$(CC) -o $@ $^ $(LIBS) 
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) 
 
 .PHONY: clean
 
 clean:
 	rm -r $(ODIR)
 	rm ./MezzoReader
+
+

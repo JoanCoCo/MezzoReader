@@ -51,6 +51,7 @@ int main(int argc, char** argv)
     cout << staffsFound.size() << " staffs have been found." << endl;
 
     MezzoPlayer* player = new MezzoPlayer(); 
+    list<Note> allNotesList = list<Note>();
 
     Mat results = src.clone();
 
@@ -65,16 +66,23 @@ int main(int argc, char** argv)
 
         for(std::list<Note>::iterator n = notes.begin(); n != notes.end(); n++) {
             MezzoUtilities::draw_note(&results, *n, *s);
-            player->Play(*n);
-            player->WaitToFinishPlaying();
+            allNotesList.push_back(*n);
         }
     }
+
+    for(std::list<Note>::iterator n = allNotesList.begin(); n != allNotesList.end(); n++) {
+        Mat view = src.clone();
+        MezzoUtilities::draw_note(&view, *n, *(staffsFound.begin()));
+        MezzoUtilities::show_wait_time_destroy("Playing...", view);
+        player->Play(*n);
+    }
+
     //Utilities::show_wait_destroy("Results", results);
     cv::imwrite("pentagrama_analizado.png", results);
-    for(std::list<Staff>::iterator s = staffsFound.begin(); s != staffsFound.end(); s++) {
+    /*for(std::list<Staff>::iterator s = staffsFound.begin(); s != staffsFound.end(); s++) {
         Mat staffImage = MezzoUtilities::crop_staff_from_image(results, *s);
         MezzoUtilities::show_wait_destroy("Staff", staffImage);
-    }
+    }*/
 
     delete player;
     return 0;

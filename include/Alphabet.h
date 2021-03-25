@@ -13,7 +13,8 @@
 #define QUAVER_TAIL_UP_TEMPLATE "templates/quaver_tail_up_template.png"
 #define QUAVER_TAIL_DOWN_TEMPLATE "templates/quaver_tail_down_template.png"
 #define QUAVER_SILENCE_TEMPLATE "templates/corchea_silence.png"
-#define NUMBER_OF_SYMBOLS 7
+#define CLAVE_DE_SOL_TEMPLATE "templates/sun_key_template.png"
+#define NUMBER_OF_SYMBOLS 8
 
 #define QUAVER_TAIL_UP_ID 0
 #define QUAVER_TAIL_DOWN_ID 1
@@ -34,6 +35,7 @@ static Symbol CROTCHET_SILENCE = Symbol(CROTCHET_SILENCE_TEMPLATE, 3.0f, 0.0f, 0
 static Symbol MINIM_SILENCE = Symbol(MINIM_SILENCE_TEMPLATE, 0.75f, 0.0f, 0.71, MINIM_SILENCE_ID, true);
 static Symbol SEMIBREVE_SILENCE = Symbol(SEMIBREVE_SILENCE_TEMPLATE, 0.75f, 0.0f, 0.7, SEMIBREVE_SILENCE_ID, true);
 static Symbol QUAVER_SILENCE = Symbol(QUAVER_SILENCE_TEMPLATE, 2.0f, 0.0f, 0.95, QUAVER_SILENCE_ID, true);
+static Symbol CLAVE_DE_SOL = Symbol(CLAVE_DE_SOL_TEMPLATE, 8.0f, 0.0f, 0.88, -1);
 
 static Symbol QUAVER_TAIL_UP = Symbol(QUAVER_TAIL_UP_TEMPLATE, 3.0f, 2.0f, 0.912, QUAVER_NOTE_ID);
 static Symbol QUAVER_TAIL_DOWN = Symbol(QUAVER_TAIL_DOWN_TEMPLATE, 3.0f, 0.0f, 0.91, QUAVER_NOTE_ID);
@@ -44,7 +46,8 @@ static Symbol SYMBOLS[NUMBER_OF_SYMBOLS] = {CROTCHET_NOTE,
                                             CROTCHET_SILENCE,
                                             MINIM_SILENCE, 
                                             SEMIBREVE_SILENCE, 
-                                            QUAVER_SILENCE};
+                                            QUAVER_SILENCE,
+                                            CLAVE_DE_SOL};
 
 static Symbol QUAVER_TRAITS[2] = {QUAVER_TAIL_UP, QUAVER_TAIL_DOWN};
 

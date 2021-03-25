@@ -16,7 +16,6 @@
     #include <AL/alut.h>
 #endif
 #include <iostream>
-#include <list>
 #include "Note.h"
 
 using namespace std;
