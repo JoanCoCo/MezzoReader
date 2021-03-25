@@ -63,11 +63,6 @@ public:
     Note(int x, int y, int tone, int symbol, bool isSilence = false);
 
     /**
-     * Plays the note.
-     */
-    void play();
-
-    /**
      * Gets the note representation as a string.
      * The representation cosists on the note 
      * tone (Do, Re, Mi, etc.) plus +N or -N for
@@ -84,6 +79,8 @@ public:
      * @param symbolId integer representing the symbol of the note.
      */
     void set_note_duration(int symbolId);
+
+    static int* tone_split(int tone);
 };
 
 #endif

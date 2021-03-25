@@ -59,8 +59,6 @@ void Note::set_note_duration(int symbolId) {
     }
 }
 
-void Note::play() { }
-
 string Note::get_note_name() {
     string name = "";
     int t = tone + 2;
@@ -109,3 +107,19 @@ string Note::get_note_name() {
     return name;
 }
 
+int* Note::tone_split(int tone) {
+    int t = tone + 2;
+    int s;
+    if(t < 0) {
+        int aux = t;
+        t = 7 * (t / 7 + 1) + t;
+        s = -1 - (aux / 7);
+    } else {
+        s = t / 7;
+        t = t % 7;
+    }
+    static int result[2];
+    result[0] = t;
+    result[1] = s;
+    return result;
+}

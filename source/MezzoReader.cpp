@@ -14,6 +14,7 @@
 #include "../include/Staff.h"
 #include "../include/MezzoUtilities.h"
 #include "../include/Note.h"
+#include "../include/MezzoPlayer.h"
 
 using namespace std;
 using namespace cv;
@@ -49,6 +50,8 @@ int main(int argc, char** argv)
 
     cout << staffsFound.size() << " staffs have been found." << endl;
 
+    MezzoPlayer* player = new MezzoPlayer(); 
+
     Mat results = src.clone();
 
     for(std::list<Staff>::iterator s = staffsFound.begin(); s != staffsFound.end(); s++) {
@@ -62,6 +65,8 @@ int main(int argc, char** argv)
 
         for(std::list<Note>::iterator n = notes.begin(); n != notes.end(); n++) {
             MezzoUtilities::draw_note(&results, *n, *s);
+            player->Play(*n);
+            player->WaitToFinishPlaying();
         }
     }
     //Utilities::show_wait_destroy("Results", results);
@@ -71,6 +76,7 @@ int main(int argc, char** argv)
         MezzoUtilities::show_wait_destroy("Staff", staffImage);
     }
 
+    delete player;
     return 0;
 }
 
