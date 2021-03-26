@@ -6,6 +6,7 @@
  * 
  */
 
+#include <opencv2/opencv.hpp>
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/highgui.hpp>
@@ -19,18 +20,25 @@
 using namespace std;
 using namespace cv;
 
+bool visualModeOn;
+bool playModeOn;
+
 int main(int argc, char** argv)
 {
 
-    CommandLineParser parser(argc, argv, "{@input | images/notation.png | input image}");
-    Mat src = imread( samples::findFile( parser.get<String>("@input") ), IMREAD_COLOR);
+    CommandLineParser parser(argc, argv, "{i input | images/notation.png | input image}"
+        "{v | | visual mode}" "{p | | play music}" "{o output | pentagrama_analizado.png | output image}");
+    Mat src = imread( samples::findFile( parser.get<String>("i") ), IMREAD_COLOR);
+    string outName = parser.get<String>("o");
+    visualModeOn = parser.has("v");
+    playModeOn = parser.has("p");
+
     if (src.empty())
     {
         cout << "Could not open or find the image!\n" << endl;
-        cout << "Usage: " << argv[0] << " <Input image>" << endl;
         return -1;
     }
-    imshow("src", src);
+    //imshow("src", src);
 
     Mat gray;
     if (src.channels() == 3)
@@ -50,7 +58,6 @@ int main(int argc, char** argv)
 
     cout << staffsFound.size() << " staffs have been found." << endl;
 
-    MezzoPlayer* player = new MezzoPlayer(); 
     list<Note> allNotesList = list<Note>();
 
     Mat results = src.clone();
@@ -62,29 +69,34 @@ int main(int argc, char** argv)
             cv::line(results, p1, p2, Scalar(19,201,198), 2);
         }
 
-        list<Note> notes = MezzoUtilities::extract_notes_v2(gray, *s, false);
+        list<Note> notes = MezzoUtilities::extract_notes_v2(gray, *s, visualModeOn);
 
         for(std::list<Note>::iterator n = notes.begin(); n != notes.end(); n++) {
             MezzoUtilities::draw_note(&results, *n, *s);
-            allNotesList.push_back(*n);
+            if(playModeOn) allNotesList.push_back(*n);
         }
     }
 
-    for(std::list<Note>::iterator n = allNotesList.begin(); n != allNotesList.end(); n++) {
-        Mat view = src.clone();
-        MezzoUtilities::draw_note(&view, *n, *(staffsFound.begin()));
-        MezzoUtilities::show_wait_time_destroy("Playing...", view);
-        player->Play(*n);
+    if(playModeOn) {
+        MezzoPlayer* player = new MezzoPlayer(); 
+
+        for(std::list<Note>::iterator n = allNotesList.begin(); n != allNotesList.end(); n++) {
+            Mat view = src.clone();
+            MezzoUtilities::draw_note(&view, *n, *(staffsFound.begin()));
+            MezzoUtilities::show_wait_time_destroy("Playing...", view);
+            player->Play(*n);
+        }
+        player->Stop();
+        delete player;
     }
 
     //Utilities::show_wait_destroy("Results", results);
-    cv::imwrite("pentagrama_analizado.png", results);
+    cv::imwrite(outName, results);
     /*for(std::list<Staff>::iterator s = staffsFound.begin(); s != staffsFound.end(); s++) {
         Mat staffImage = MezzoUtilities::crop_staff_from_image(results, *s);
         MezzoUtilities::show_wait_destroy("Staff", staffImage);
     }*/
 
-    delete player;
     return 0;
 }
 

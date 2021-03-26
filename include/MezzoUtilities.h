@@ -158,7 +158,7 @@ public:
      *      analisis that will show some aditional information about
      *      the notes found. It is set to false by default.
      */
-    static list<Note> extract_notes_v2(Mat image, Staff staff, bool verbose = false);
+    static list<Note> extract_notes_v2(Mat image, Staff staff, bool visual = false);
 
     static void draw_note(Mat* image, Note note, Staff staff, bool showDescription = false);
 };

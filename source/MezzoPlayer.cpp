@@ -127,7 +127,7 @@ string MezzoPlayer::GetToneAudioFile(int tone) {
 }
 
 void MezzoPlayer::Stop() {
-    if(errorFree) alSourceStop(source);
+    if(errorFree && IsPlaying()) alSourceStop(source);
 }
 
 bool MezzoPlayer::IsPlaying() {
