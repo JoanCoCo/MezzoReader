@@ -35,8 +35,12 @@ MezzoPlayer::MezzoPlayer() {
     alListenerfv(AL_VELOCITY,listenerVelocity);
     alListenerfv(AL_ORIENTATION,listenerOrientation);
 
-    alGenBuffers(1, &buffer);
+    alGenBuffers(7, buffers);
     alGenSources(1, &source);
+
+    for(int i = DO; i <= SI; i++) {
+        LoadBufferFromWAVFile(i, (ALbyte*) GetToneAudioFile(i - 2).c_str());
+    }
 
     alSourcef(source, AL_GAIN, 1.0f);
     alSourcefv(source, AL_POSITION, sourcePosition);
@@ -53,27 +57,29 @@ MezzoPlayer::MezzoPlayer() {
 
 MezzoPlayer::~MezzoPlayer() {
     alDeleteSources(1, &source);
-    alDeleteBuffers(1, &buffer);
+    alDeleteBuffers(7, buffers);
     alutExit ();
 }
 
-void MezzoPlayer::LoadBufferFromWAVFile(ALbyte* file) {
-    if(errorFree) {
-        alDeleteBuffers(1, &buffer);
-        alGenBuffers(1, &buffer);
+void MezzoPlayer::LoadBufferFromWAVFile(int buffer, ALbyte* file) {
+    //if(errorFree) {
+        //alDeleteBuffers(1, buffer);
+        //alGenBuffers(1, &buffer);
         alutLoadWAVFile(file, &formatAL, &dataAL, &sizeAL, &freqAL);
-        alBufferData(buffer, formatAL, dataAL, sizeAL, freqAL);
+        alBufferData(buffers[buffer], formatAL, dataAL, sizeAL, freqAL);
         alutUnloadWAV(formatAL, dataAL, sizeAL, freqAL);
-        alSourcei(source, AL_BUFFER, buffer);
-    }
+        //alSourcei(source, AL_BUFFER, buffer);
+    //}
 }
 
 void MezzoPlayer::Play(Note note) {
     if(errorFree) {
         if(!note.isSilence) {
             ALbyte* noteSoundFile = (ALbyte*) GetToneAudioFile(note.tone).c_str();
-            LoadBufferFromWAVFile(noteSoundFile);
+            //LoadBufferFromWAVFile(noteSoundFile);
             float s = (float) *(note.tone_split(note.tone) + 1);
+            int t = *(note.tone_split(note.tone) + 0);
+            alSourcei(source, AL_BUFFER, buffers[t]);
             if(s >= 0) {
                 alSourcef(source, AL_PITCH, 1.0f + s);
             } else {

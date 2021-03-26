@@ -23,7 +23,7 @@ using namespace std;
 class MezzoPlayer
 {
 private:
-    ALuint buffer;
+    ALuint buffers[7];
     ALuint source;
     ALuint environment;
 
@@ -40,7 +40,7 @@ private:
     ALvoid *dataAL;
     bool errorFree;
 
-    void LoadBufferFromWAVFile(ALbyte* file);
+    void LoadBufferFromWAVFile(int buffer, ALbyte* file);
     string GetToneAudioFile(int tone);
 
 public:
