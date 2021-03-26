@@ -62,6 +62,16 @@ int main(int argc, char** argv)
 
     Mat results = src.clone();
 
+    if(staffsFound.size() == 0) {
+        list<int> lines = MezzoUtilities::find_horizontal_lines(bw);
+        lines = MezzoUtilities::filter_horizontal_lines(lines);
+        for(std::list<int>::iterator i = lines.begin(); i != lines.end(); i++) {
+            Point p1(0, *i);
+            Point p2(results.cols - 1, *i);
+            cv::line(results, p1, p2, Scalar(19,201,198), 2);
+        }
+    }
+
     for(std::list<Staff>::iterator s = staffsFound.begin(); s != staffsFound.end(); s++) {
         for(int i = 0; i < 5; i++) {
             Point p1(0, (*s).get_line(i));
