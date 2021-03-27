@@ -94,9 +94,9 @@ int main(int argc, char** argv)
             Mat view = src.clone();
             MezzoUtilities::draw_note(&view, *n, *(staffsFound.begin()));
             MezzoUtilities::show_wait_time_destroy("Playing...", view);
-            player->Play(*n);
+            player->play(*n);
         }
-        player->Stop();
+        player->stop();
         delete player;
     }
 

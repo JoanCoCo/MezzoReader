@@ -27,8 +27,6 @@ const ALfloat MezzoPlayer::sourcePosition[] = {0.0f, 0.0f, 0.0f};
 const ALfloat MezzoPlayer::sourceVelocity[] = {0.0f, 0.0f, 0.0f};
 
 MezzoPlayer::MezzoPlayer() {
-    int error;
-    string errorS;
     alutInit(0, NULL);
 
     alListenerfv(AL_POSITION,listenerPosition);
@@ -39,7 +37,7 @@ MezzoPlayer::MezzoPlayer() {
     alGenSources(1, &source);
 
     for(int i = DO; i <= SI; i++) {
-        LoadBufferFromWAVFile(i, (ALbyte*) GetToneAudioFile(i - 2).c_str());
+        load_buffer_from_wav_file(i, (ALbyte*) get_tone_audio_file(i - 2).c_str());
     }
 
     alSourcef(source, AL_GAIN, 1.0f);
@@ -61,22 +59,17 @@ MezzoPlayer::~MezzoPlayer() {
     alutExit ();
 }
 
-void MezzoPlayer::LoadBufferFromWAVFile(int buffer, ALbyte* file) {
-    //if(errorFree) {
-        //alDeleteBuffers(1, buffer);
-        //alGenBuffers(1, &buffer);
-        alutLoadWAVFile(file, &formatAL, &dataAL, &sizeAL, &freqAL);
-        alBufferData(buffers[buffer], formatAL, dataAL, sizeAL, freqAL);
-        alutUnloadWAV(formatAL, dataAL, sizeAL, freqAL);
-        //alSourcei(source, AL_BUFFER, buffer);
-    //}
+void MezzoPlayer::load_buffer_from_wav_file(int buffer, ALbyte* file) {
+    alutLoadWAVFile(file, &formatAL, &dataAL, &sizeAL, &freqAL);
+    alBufferData(buffers[buffer], formatAL, dataAL, sizeAL, freqAL);
+    alutUnloadWAV(formatAL, dataAL, sizeAL, freqAL);
 }
 
-void MezzoPlayer::Play(Note note) {
+void MezzoPlayer::play(Note note) {
     if(errorFree) {
         if(!note.isSilence) {
-            ALbyte* noteSoundFile = (ALbyte*) GetToneAudioFile(note.tone).c_str();
-            //LoadBufferFromWAVFile(noteSoundFile);
+            ALbyte* noteSoundFile = (ALbyte*) get_tone_audio_file(note.tone).c_str();
+            //load_buffer_from_wav_file(noteSoundFile);
             float s = (float) *(note.tone_split(note.tone) + 1);
             int t = *(note.tone_split(note.tone) + 0);
             alSourcei(source, AL_BUFFER, buffers[t]);
@@ -93,11 +86,11 @@ void MezzoPlayer::Play(Note note) {
         {
             current = chrono::steady_clock::now();
         }
-        if(!note.isSilence) Stop();
+        if(!note.isSilence) stop();
     }
 }
 
-string MezzoPlayer::GetToneAudioFile(int tone) {
+string MezzoPlayer::get_tone_audio_file(int tone) {
     string name = "sounds/pad/";
     int* pair = Note::tone_split(tone);
     int t = *(pair+0);
@@ -132,17 +125,25 @@ string MezzoPlayer::GetToneAudioFile(int tone) {
     return name;
 }
 
-void MezzoPlayer::Stop() {
-    if(errorFree && IsPlaying()) alSourceStop(source);
+void MezzoPlayer::stop() {
+    if(errorFree && is_playing()) alSourceStop(source);
 }
 
-bool MezzoPlayer::IsPlaying() {
+bool MezzoPlayer::is_playing() {
     if(!errorFree) return false;
     ALint state;
     alGetSourcei(source, AL_SOURCE_STATE, &state);
     return state == AL_PLAYING;
 }
 
-void MezzoPlayer::WaitToFinishPlaying() {
-    while (IsPlaying()){}
+bool MezzoPlayer::has_been_correctly_initialized() {
+    return errorFree;
+}
+
+string MezzoPlayer::get_error() {
+    if(!errorFree) {
+        return alGetString(error);
+    } else {
+        return "";
+    }
 }
