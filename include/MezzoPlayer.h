@@ -20,6 +20,9 @@
 
 using namespace std;
 
+/**
+ * Class used to represent a note's player.
+ */
 class MezzoPlayer
 {
 private:

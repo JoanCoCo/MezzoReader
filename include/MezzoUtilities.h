@@ -19,11 +19,61 @@
 #include <list>
 #include "Staff.h"
 #include "Note.h"
+#include "Symbol.h"
 
 using namespace std;
 using namespace cv;
 
+/**
+ * Class containing uitlities for the analysis of music sheets.
+ */
 class MezzoUtilities {
+
+private:
+    /**
+     * Call back function for the UI slider.
+     * 
+     * @param pos new position of the slider.
+     * @param userdata pointer to user's data.
+     */
+    static void slider_changed(int pos, void *userdata);
+
+    /**
+     * Returns the index of the most similar template to the
+     * content of an image.
+     * 
+     * @param symbols array of the symbols we want to search in
+     *      the image.
+     * @param len length of the give array.
+     * @param image cv::Mat image to be analyzed.
+     * @param h integer reprenting the reference height for the 
+     *      templates.
+     * @return vector of the form (index of the template, x 
+     *      position of the template in the image, y position of 
+     *      the template in the image). The index returned will be
+     *      -1 if none of the symbols was found.
+     */ 
+    static Vec3i find_most_suitable_template_from(Symbol *symbols, int len, Mat image, int h);
+
+    /**
+     * Compares two points.
+     * 
+     * @param a point a.
+     * @param b point b.
+     * @return a.x < b.x.
+     */
+    static bool compare_points(Point a, Point b);
+
+    /**
+     * Obtains the tone of a note given its y coordinate and the
+     * staff to which it belongs.
+     * 
+     * @param y integer representing the y coordinate of the note.
+     * @param staff Staff that contains the note.
+     * @return float representing the tone of the note measures as 
+     *      half spaces.
+     */
+    static float get_note_tone(int y, Staff staff);
     
 public:
 
@@ -160,6 +210,15 @@ public:
      */
     static list<Note> extract_notes_v2(Mat image, Staff staff, bool visual = false);
 
+    /**
+     * Draws a note on a given image.
+     * 
+     * @param image pointer to the cv::Mat image to be drawn on.
+     * @param note Note to be drawn.
+     * @param staff Staff containing the note.
+     * @param showDescription optional bool to add a text description 
+     *      below the note. It is set to false by default.
+     */
     static void draw_note(Mat* image, Note note, Staff staff, bool showDescription = false);
 };
 

@@ -57,7 +57,7 @@ public:
      * @param tone integer that represents the tone of the note measured 
      *      as half-spaces.
      * @param symbol integer that represents the symbol.
-     * @param isSilence optional bool to indicate if its a note or a 
+     * @param isSilence optional bool to indicate if it's a note or a 
      *      silence. It is set to false by default.
      */
     Note(int x, int y, int tone, int symbol, bool isSilence = false);

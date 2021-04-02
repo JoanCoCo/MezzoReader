@@ -110,7 +110,7 @@ list<Staff> MezzoUtilities::extract_all_staffs ( Mat image ) {
     return staffs;
 }
 
-float get_note_tone(int y, Staff staff) {
+float MezzoUtilities::get_note_tone(int y, Staff staff) {
     float baseLine = (float) staff.get_line(4);
     float spaceBetweenLines = (float) staff.get_space_between_lines();
     float remapY = (baseLine - (float) y);
@@ -298,7 +298,7 @@ Mat MezzoUtilities::erase_horizontal_lines(Mat image, int size) {
     return result;
 }
 
-bool compare_points(Point a, Point b) {
+bool MezzoUtilities::compare_points(Point a, Point b) {
     return (a.x) < (b.x);
 }
 
@@ -373,7 +373,7 @@ Mat MezzoUtilities::crop_staff_from_image(Mat image, Staff staff, bool markIt, M
     return staffImage;
 }
 
-Vec3i find_most_suitable_template_from(Symbol *symbols, int len, Mat image, int h) {
+Vec3i MezzoUtilities::find_most_suitable_template_from(Symbol *symbols, int len, Mat image, int h) {
     double maxV = 0;
     int maxI = -1, x = -1, y = -1;
     for(int i = 0; i < len; i++) {
@@ -403,7 +403,7 @@ Vec3i MezzoUtilities::find_most_suitable_template(Mat image, int h) {
     return find_most_suitable_template_from(SYMBOLS, NUMBER_OF_SYMBOLS, image, h);
 }
 
-void sliderChanged(int pos, void *userdata) {
+void MezzoUtilities::slider_changed(int pos, void *userdata) {
     speed = pos;
 }
 
@@ -428,7 +428,7 @@ list<Note> MezzoUtilities::extract_notes_v2(Mat image, Staff staff, bool visual)
             }
             if(!sliderIsCreated) {
                 namedWindow("Reading...", CV_WINDOW_NORMAL);
-                createTrackbar("Speed", "Reading...", &speed, MAX_DELAY - 1, sliderChanged);
+                createTrackbar("Speed", "Reading...", &speed, MAX_DELAY - 1, slider_changed);
                 sliderIsCreated = true;
             }
             imshow("Reading...", gOut);
