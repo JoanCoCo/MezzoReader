@@ -25,7 +25,7 @@ using namespace std;
 using namespace cv;
 
 /**
- * Class containing uitlities for the analysis of music sheets.
+ * Class containing utilities for the analysis of music sheets.
  */
 class MezzoUtilities {
 
