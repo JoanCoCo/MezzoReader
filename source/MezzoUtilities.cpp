@@ -304,7 +304,7 @@ bool MezzoUtilities::compare_points(Point a, Point b) {
 
 list<Point> MezzoUtilities::find_matches(Mat image, string templ, double thresh, int h, bool verbose) {
 
-    Mat temp = imread( samples::findFile(templ), IMREAD_COLOR);
+    Mat temp = imread(templ, IMREAD_COLOR);
     cvtColor(temp, temp, COLOR_BGR2GRAY);
     int margin = 2;
     if(h > 0) {
@@ -378,7 +378,7 @@ Vec3i MezzoUtilities::find_most_suitable_template_from(Symbol *symbols, int len,
     int maxI = -1, x = -1, y = -1;
     for(int i = 0; i < len; i++) {
         Symbol symbol = symbols[i];
-        Mat temp = imread( samples::findFile(symbol.get_source_template()), IMREAD_COLOR);
+        Mat temp = imread(symbol.get_source_template(), IMREAD_COLOR);
         cvtColor(temp, temp, COLOR_BGR2GRAY);
         int margin = 2;
         int hr = symbol.get_appropiate_pixel_scale(h);
@@ -427,7 +427,7 @@ list<Note> MezzoUtilities::extract_notes_v2(Mat image, Staff staff, bool visual)
                 MezzoUtilities::draw_note(&gOut, lastN, staff, true);
             }
             if(!sliderIsCreated) {
-                namedWindow("Reading...", CV_WINDOW_NORMAL);
+                namedWindow("Reading...", WINDOW_NORMAL);
                 createTrackbar("Speed", "Reading...", &speed, MAX_DELAY - 1, slider_changed);
                 sliderIsCreated = true;
             }

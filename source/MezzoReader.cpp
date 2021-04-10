@@ -28,7 +28,7 @@ int main(int argc, char** argv)
 
     CommandLineParser parser(argc, argv, "{i input | images/notation.png | input image}"
         "{v | | visual mode}" "{p | | play music}" "{o output | pentagrama_analizado.png | output image}");
-    Mat src = imread( samples::findFile( parser.get<String>("i") ), IMREAD_COLOR);
+    Mat src = imread(parser.get<String>("i") , IMREAD_COLOR);
     string outName = parser.get<String>("o");
     visualModeOn = parser.has("v");
     playModeOn = parser.has("p");

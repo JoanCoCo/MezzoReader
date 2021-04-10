@@ -45,7 +45,7 @@ enum IDs {  CROTCHET_NOTE_ID,
             QUAVER_SILENCE_ID };
 
 /// Description of the traits and parameters of each symbol. 
-static Symbol CROTCHET_NOTE = Symbol(CROTCHET_NOTE_TEMPLATE, 1.0f, 1.0f, 0.75, CROTCHET_NOTE_ID);
+static Symbol CROTCHET_NOTE = Symbol(CROTCHET_NOTE_TEMPLATE, 1.0f, 1.0f, 0.76, CROTCHET_NOTE_ID);
 static Symbol MINIM_NOTE = Symbol(MINIM_NOTE_TEMPLATE, 1.0f, 0.0f, 0.8, MINIM_NOTE_ID);
 static Symbol SEMIBREVE_NOTE = Symbol(SEMIBREVE_NOTE_TEMPLATE, 1.0f, 1.0f, 0.8, SEMIBREVE_NOTE_ID);
 static Symbol CROTCHET_SILENCE = Symbol(CROTCHET_SILENCE_TEMPLATE, 3.0f, 0.0f, 0.88, CROTCHET_SILENCE_ID, true);

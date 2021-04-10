@@ -2,8 +2,8 @@ IDIR=include
 CC=g++
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Darwin)
-	CFLAGS=`pkg-config --cflags opencv --cflags`
-	LIBS=`pkg-config opencv --libs` -framework OpenAL
+	CFLAGS= -std=c++11 `pkg-config opencv4 --cflags`
+	LIBS=`pkg-config opencv4 --libs` -framework OpenAL
 else
 	CFLAGS=`pkg-config --cflags freealut opencv --cflags`
 	LIBS=`pkg-config freealut opencv --libs`
