@@ -89,7 +89,7 @@ public:
      * @return list of integer representing the rows of the
      *      image where horizontal lines can be found.
      */
-    static list<int> find_horizontal_lines ( Mat image, bool verbose = false );
+    static list<int> find_horizontal_lines ( Mat image, float percentage = 70.0f, bool verbose = false );
 
     /**
      * Process a set of horizontal lines to filter those who
@@ -109,7 +109,7 @@ public:
      * @param image cv::Mat image to be analized.
      * @return list of the staffs found of the image.
      */
-    static list<Staff> extract_all_staffs ( Mat image );
+    static list<Staff> extract_all_staffs ( Mat image, bool adaptative = false, int expectedLines = 0, float precision = 3.0f );
 
     /**
      * Gets all the notes contained on the staff of an image.

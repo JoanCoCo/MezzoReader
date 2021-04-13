@@ -23,15 +23,29 @@ using namespace cv;
 bool visualModeOn;
 bool playModeOn;
 
+bool adaptativeMode;
+int expectedLines = 0;
+float adaptativePresition = 0.0f;
+
 int main(int argc, char** argv)
 {
 
-    CommandLineParser parser(argc, argv, "{i input | images/notation.png | input image}"
-        "{v | | visual mode}" "{p | | play music}" "{o output | pentagrama_analizado.png | output image}");
+    CommandLineParser parser(argc, argv, 
+        "{i input | images/notation.png | input image}"
+        "{v | <none> | visual mode}" 
+        "{p | <none> | play music}" 
+        "{a lines | <none> | adaptative mode}"
+        "{ap n | 3 | presition for adaptative mode as 10e-n}"
+        "{o output | pentagrama_analizado.png | output image}");
     Mat src = imread(parser.get<String>("i") , IMREAD_COLOR);
     string outName = parser.get<String>("o");
     visualModeOn = parser.has("v");
     playModeOn = parser.has("p");
+    adaptativeMode = parser.has("a");
+    if(adaptativeMode) {
+        adaptativePresition = parser.get<float>("ap");
+        expectedLines = parser.get<int>("a");
+    }
 
     if (src.empty())
     {
@@ -49,12 +63,21 @@ int main(int argc, char** argv)
     {
         gray = src;
     }
-    //MezzoUtilities::show_wait_destroy("gray", gray);
+    MezzoUtilities::show_wait_destroy("gray", gray);
 
     Mat bw;
     adaptiveThreshold(~gray, bw, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY, 15, -2);
     
-    list<Staff> staffsFound = MezzoUtilities::extract_all_staffs(bw);
+    list<Staff> staffsFound;
+
+    if(adaptativeMode) {
+        cout << "Adaptative mode is on" << endl;
+        cout << "The expected number of lines is " << expectedLines << endl;
+        cout << "The precision to be used is 10e-" << (int) adaptativePresition << endl;
+        staffsFound = MezzoUtilities::extract_all_staffs(bw, adaptativeMode, expectedLines, adaptativePresition);
+    } else {
+        staffsFound = MezzoUtilities::extract_all_staffs(bw);
+    }
 
     cout << staffsFound.size() << " staffs have been found." << endl;
 

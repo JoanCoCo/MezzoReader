@@ -25,7 +25,7 @@ using namespace cv;
 static const int MAX_DELAY = 1000;
 int speed = MAX_DELAY - 1;
 
-list<int> MezzoUtilities::find_horizontal_lines ( Mat image, bool verbose ) {
+list<int> MezzoUtilities::find_horizontal_lines ( Mat image, float percentage, bool verbose ) {
     Mat horizontal = image.clone();
     
     int horizontal_size = horizontal.cols / 30;
@@ -42,19 +42,19 @@ list<int> MezzoUtilities::find_horizontal_lines ( Mat image, bool verbose ) {
     //! [horiz]
     
     list <int> lines;
-    
+    // -----------------------------------------------------------------
     for (int i = 0; i < horizontal.rows; i++) {
         int black = 0;
         for(int j = 0; j < horizontal.cols; j++) {
             black += (int)(horizontal.at<uchar>(i,j)) / 255;
         }
         //cout << black << endl;
-        if(black > horizontal.cols * 7 / 10) {
+        if((float)black > (float)horizontal.cols * percentage / 100.0f) {
             //cout << i << endl;
             lines.push_back(i);
         }
     }
-    
+    // -----------------------------------------------------------------
     return lines;
 }
 
@@ -76,10 +76,62 @@ list<int> MezzoUtilities::filter_horizontal_lines ( list<int> lines) {
     return result;
 }
 
-list<Staff> MezzoUtilities::extract_all_staffs ( Mat image ) {
+list<Staff> MezzoUtilities::extract_all_staffs ( Mat image , bool adaptative, int expectedLines, float precision ) {
     list<Staff> staffs;
-    list<int> lines = MezzoUtilities::find_horizontal_lines(image);
-    lines = MezzoUtilities::filter_horizontal_lines(lines);
+    list<int> lines;
+    float percent = 0.0f;
+
+    if(adaptative) {
+        percent = 100.0f;
+    } else {
+        percent = 70.0f;
+    }
+    
+    int fastSteps = 2;
+    bool endAdaptativeBehaviour = false;
+    do {
+        if(adaptative) {
+            switch (fastSteps)
+            {
+            case 2:
+                percent /= 2.0f;
+                break;
+            case 1:
+                percent -= 1.0f;
+                break;
+            default:
+                percent -= pow(10.0f, -1.0f * precision);
+                break;
+            }
+            cout << percent << "%" << endl;
+        }
+        lines.clear();
+
+        lines = MezzoUtilities::find_horizontal_lines(image, percent);
+        lines = MezzoUtilities::filter_horizontal_lines(lines);
+
+        endAdaptativeBehaviour = lines.size() == expectedLines;
+
+        if(adaptative && !endAdaptativeBehaviour) {
+            if(lines.size() > expectedLines && fastSteps > 0) {
+                if(fastSteps == 2) {
+                    percent *= 2.0f;
+                } else if(fastSteps == 1) {
+                    percent += 1.0f;
+                }
+                fastSteps--;
+            } else if(fastSteps == 0) {
+                endAdaptativeBehaviour = lines.size() >= expectedLines;
+            }
+        }
+    } while(adaptative && !endAdaptativeBehaviour);
+
+    if(adaptative) {
+        (lines.size() != expectedLines) ? 
+            cout << "Adaptative process failed with " << percent << "%" << endl : 
+            cout << "Adaptative process succed with " << percent << "%" << endl;
+    }
+
     if(lines.size() % 5 == 0) {
         int numOfStaffs = lines.size() % 5;
         int staffLines [5];
@@ -105,7 +157,7 @@ list<Staff> MezzoUtilities::extract_all_staffs ( Mat image ) {
             }
         }
     } else {
-        cout << "Error when detecting the staffs, worng number of lines detected: " << lines.size() << endl;
+        cout << "Error when detecting the staffs, wrong number of lines detected: " << lines.size() << endl;
     }
     return staffs;
 }
