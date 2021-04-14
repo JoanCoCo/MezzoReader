@@ -83,6 +83,9 @@ public:
      * https://docs.opencv.org/master/dd/dd7/tutorial_morph_lines_detection.html.
      * 
      * @param image the cv::Mat image to be analized.
+     * @param percentage optional float that represents the amount of black pixels
+     *      necessary for a row of the image to be a line expressed as a percentage
+     *      of the image width. Its value by default is 70%.
      * @param verbose optional bool to choose if we want a verbose analysis that will show 
      *      some aditional information about the matches found. It is set to false by 
      *      default.
@@ -107,6 +110,13 @@ public:
      * Gets all the staffs contained on an image.
      * 
      * @param image cv::Mat image to be analized.
+     * @param adaptative optional bool to activate the adaptative 
+     *      staff extraction. It is false by default.
+     * @param epectedLines optional number of lines expected to be 
+     *      found by the adaptative mode. Caution, it is 0 by default.
+     * @param precision optional float n that indicates de precision 
+     *      of the smaller steps of the adaptative behaviour as 10e-n.
+     *      It is 3 by default.
      * @return list of the staffs found of the image.
      */
     static list<Staff> extract_all_staffs ( Mat image, bool adaptative = false, int expectedLines = 0, float precision = 3.0f );

@@ -50,7 +50,7 @@ int main(int argc, char** argv)
     playModeOn = parser.has("p");
     adaptativeMode = parser.has("a");
     if(adaptativeMode) {
-        adaptativePresition = parser.get<float>("ap");
+        adaptativePresition = parser.get<float>("n");
         expectedLines = parser.get<int>("a") * 5;
     }
 
