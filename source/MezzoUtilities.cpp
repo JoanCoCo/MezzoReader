@@ -18,6 +18,7 @@
 #include "../include/Alphabet.h"
 #include "../include/Symbol.h"
 #include <math.h>
+#include <iomanip>
 
 using namespace std;
 using namespace cv;
@@ -103,7 +104,8 @@ list<Staff> MezzoUtilities::extract_all_staffs ( Mat image , bool adaptative, in
                 percent -= pow(10.0f, -1.0f * precision);
                 break;
             }
-            cout << percent << "%" << endl;
+            cout << setw(15) << '\r' << flush;
+            cout << percent << "%" << '\r' << flush;
         }
         lines.clear();
 
@@ -127,9 +129,10 @@ list<Staff> MezzoUtilities::extract_all_staffs ( Mat image , bool adaptative, in
     } while(adaptative && !endAdaptativeBehaviour);
 
     if(adaptative) {
+        cout << endl;
         (lines.size() != expectedLines) ? 
-            cout << "Adaptative process failed with " << percent << "%" << endl : 
-            cout << "Adaptative process succed with " << percent << "%" << endl;
+            cout << "Adaptative process failed with " << percent << "%." << endl : 
+            cout << "Adaptative process succed with " << percent << "%." << endl;
     }
 
     if(lines.size() % 5 == 0) {
@@ -167,7 +170,7 @@ float MezzoUtilities::get_note_tone(int y, Staff staff) {
     float spaceBetweenLines = (float) staff.get_space_between_lines();
     float remapY = (baseLine - (float) y);
     float unit = spaceBetweenLines / 2.0f;
-    return remapY / unit;
+    return remapY / unit - (signbit(remapY) * -1) * 0.1f;
 }
 
 list<Note> MezzoUtilities::extract_notes(Mat image, Staff staff, bool verbose) {
@@ -467,6 +470,8 @@ list<Note> MezzoUtilities::extract_notes_v2(Mat image, Staff staff, bool visual)
     start = Point(0, 0);
     end = Point(1, staffImage.rows - 1);
     bool sliderIsCreated = false;
+    int barAreaHeight = (int) (roundf(0.8005 * logf(staff.get_space_between_lines()) + 1.6667f));
+    //cout << "Bar area height: " << barAreaHeight << endl;
     while(end.x < staffImage.cols) {
         if(visual) {
             Mat gOut = image.clone();
@@ -490,6 +495,7 @@ list<Note> MezzoUtilities::extract_notes_v2(Mat image, Staff staff, bool visual)
         Mat cell = staffImage(Rect(start, end));
         int templateFound, cellX, cellY;
         Vec3i findings = MezzoUtilities::find_most_suitable_template(cell, staff.get_space_between_lines());
+        //cout << "Space between lines: " << staff.get_space_between_lines() << endl;
         templateFound = findings[0];
         cellX = findings[1];
         cellY = findings[2];
@@ -497,7 +503,8 @@ list<Note> MezzoUtilities::extract_notes_v2(Mat image, Staff staff, bool visual)
             if(SYMBOLS[templateFound].get_id() >= 0) {
                 int y = cellY + staff.get_upper_limit(); 
                 int x = cellX + start.x;
-                Note n = Note(x, y, (int) roundf(get_note_tone(y, staff)), SYMBOLS[templateFound].get_id(), SYMBOLS[templateFound].is_silence());
+                //cout << "Note tone: " << get_note_tone(y, staff) << endl;
+                Note n = Note(x, y, (int) roundl(get_note_tone(y, staff)), SYMBOLS[templateFound].get_id(), SYMBOLS[templateFound].is_silence());
                 bool isFalsePositive = false;
                 if(SYMBOLS[templateFound].get_id() == CROTCHET_NOTE_ID) {
                     // First we check if this crotchet candidate is really an isolated quaver.
@@ -520,7 +527,7 @@ list<Note> MezzoUtilities::extract_notes_v2(Mat image, Staff staff, bool visual)
                     default:
                         Mat binaryCell;
                         adaptiveThreshold(~interestZone, binaryCell, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY, 15, -2);
-                        Mat hStructure = getStructuringElement(MORPH_RECT, Size(binaryCell.cols / 2, staff.get_space_between_lines() / 2 - 1));
+                        Mat hStructure = getStructuringElement(MORPH_RECT, Size(binaryCell.cols / 2, barAreaHeight /*staff.get_space_between_lines() / 2 - 1*/));
                         //MezzoUtilities::show_wait_destroy("b", binaryCell);
                         erode(binaryCell, binaryCell, hStructure, Point(-1, -1));
                         dilate(binaryCell, binaryCell, hStructure, Point(-1, -1));
@@ -553,8 +560,9 @@ list<Note> MezzoUtilities::extract_notes_v2(Mat image, Staff staff, bool visual)
             start.x = end.x;
         }
         end.x += 5;
-        cout << (int)(((float) end.x) * 100.0f / ((float) staffImage.cols)) << "%" << endl;
+        cout << (int)(((float) end.x) * 100.0f / ((float) staffImage.cols)) << "%" << '\r' << flush;
     }
+    cout << endl;
     return result;
 }
 

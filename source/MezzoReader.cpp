@@ -31,12 +31,19 @@ int main(int argc, char** argv)
 {
 
     CommandLineParser parser(argc, argv, 
-        "{i input | images/notation.png | input image}"
-        "{v | <none> | visual mode}" 
-        "{p | <none> | play music}" 
-        "{a lines | <none> | adaptative mode}"
-        "{ap n | 3 | presition for adaptative mode as 10e-n}"
-        "{o output | pentagrama_analizado.png | output image}");
+        "{help h usage ? | | Usage examples: \n\t\t./MezzoReader -i=images/notes.png -o=analysed_image.png -p -v \n\t\t./MezzoReader -a=2 -ap=5}"
+        "{i input | images/notation.png | Input image.}"
+        "{v visual | <none> | Visual mode.}" 
+        "{p play | <none> | Play music after the analysis.}" 
+        "{a staffs | <none> | Adaptative mode give then number of staffs\n\t\tcontained in the image.}"
+        "{n precision | 3 | Precision for the adaptative mode as 10e-n.}"
+        "{o output | pentagrama_analizado.png | Output image.}");
+    parser.about("Use this script to do read a music sheet from an image.");
+    if (parser.has("help"))
+    {
+        parser.printMessage();
+        return 0;
+    }
     Mat src = imread(parser.get<String>("i") , IMREAD_COLOR);
     string outName = parser.get<String>("o");
     visualModeOn = parser.has("v");
@@ -44,7 +51,7 @@ int main(int argc, char** argv)
     adaptativeMode = parser.has("a");
     if(adaptativeMode) {
         adaptativePresition = parser.get<float>("ap");
-        expectedLines = parser.get<int>("a");
+        expectedLines = parser.get<int>("a") * 5;
     }
 
     if (src.empty())
@@ -63,7 +70,7 @@ int main(int argc, char** argv)
     {
         gray = src;
     }
-    MezzoUtilities::show_wait_destroy("gray", gray);
+    //MezzoUtilities::show_wait_destroy("gray", gray);
 
     Mat bw;
     adaptiveThreshold(~gray, bw, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY, 15, -2);
@@ -71,9 +78,9 @@ int main(int argc, char** argv)
     list<Staff> staffsFound;
 
     if(adaptativeMode) {
-        cout << "Adaptative mode is on" << endl;
-        cout << "The expected number of lines is " << expectedLines << endl;
-        cout << "The precision to be used is 10e-" << (int) adaptativePresition << endl;
+        cout << "Adaptative mode is on." << endl;
+        cout << "The expected number of lines is " << expectedLines << "." << endl;
+        cout << "The precision to be used is 10e-" << (int) adaptativePresition << "." << endl;
         staffsFound = MezzoUtilities::extract_all_staffs(bw, adaptativeMode, expectedLines, adaptativePresition);
     } else {
         staffsFound = MezzoUtilities::extract_all_staffs(bw);
