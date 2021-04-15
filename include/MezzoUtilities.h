@@ -230,6 +230,11 @@ public:
      *      below the note. It is set to false by default.
      */
     static void draw_note(Mat* image, Note note, Staff staff, bool showDescription = false);
+
+
+    static Mat encode_pictoform(list<Note> notes);
+
+    static list<Note> decode_pictoform(Mat image);
 };
 
 #endif

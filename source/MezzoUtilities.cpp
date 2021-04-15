@@ -112,7 +112,7 @@ list<Staff> MezzoUtilities::extract_all_staffs ( Mat image , bool adaptative, in
         lines = MezzoUtilities::find_horizontal_lines(image, percent);
         lines = MezzoUtilities::filter_horizontal_lines(lines);
 
-        endAdaptativeBehaviour = lines.size() == expectedLines;
+        endAdaptativeBehaviour = lines.size() == expectedLines || percent < 1.0f;
 
         if(adaptative && !endAdaptativeBehaviour) {
             if(lines.size() > expectedLines && fastSteps > 0) {
@@ -581,4 +581,168 @@ void MezzoUtilities::draw_note(Mat* image, Note note, Staff staff, bool showDesc
         cv::rectangle(*image, top, low, Scalar(123,121,21), 2);
     }
     (*image).at<Vec3b>(Point(note.x, note.y)) = Vec3b(0, 0, 255);
+}
+
+Mat MezzoUtilities::encode_pictoform(list<Note> notes) {
+    int size = (int) roundf(sqrtf(notes.size()));
+    if(size * size < notes.size()) { size++; }
+    Mat pictoform(size * 3 + size, size * 3 + 1, CV_8UC3, cv::Scalar(0, 0, 0));
+
+    for(int i = 0; i < pictoform.rows; i++) {
+        pictoform.at<Vec3b>(i, 0)[0] = 0;
+        pictoform.at<Vec3b>(i, 0)[1] = 0;
+        pictoform.at<Vec3b>(i, 0)[2] = 255;
+    }
+
+    for(int i = 0; i < pictoform.rows; i+=4) {
+        for(int j = 0; j < pictoform.cols; j++) {
+            pictoform.at<Vec3b>(i, j)[0] = 0;
+            pictoform.at<Vec3b>(i, j)[1] = 255;
+            pictoform.at<Vec3b>(i, j)[2] = 255;
+        }
+    }
+
+    pictoform.at<Vec3b>(0, 0)[0] = 255;
+    pictoform.at<Vec3b>(0, 0)[1] = 255;
+    pictoform.at<Vec3b>(0, 0)[2] = 255;
+
+    int i = 1;
+    int j = 1;
+    for(std::list<Note>::iterator n = notes.begin(); n != notes.end(); n++) {
+        //cout << "Note: tone=" << (*n).tone << " id=" << (*n).symbolId << " silence=" << (*n).isSilence << endl;
+        int tone = (*n).tone;
+        int id = (*n).symbolId;
+
+        // -------------- Tone encoding ----------------- //
+        pictoform.at<Vec3b>(i, j)[2] = signbit(tone) ? 255 : 0;
+        tone = abs(tone);
+
+        pictoform.at<Vec3b>(i, j+2)[0] = (tone % 2) * 255;
+        tone /= 2;
+        pictoform.at<Vec3b>(i, j+2)[1] = (tone % 2) * 255;
+        tone /= 2;
+        pictoform.at<Vec3b>(i, j+2)[2] = (tone % 2) * 255;
+        tone /= 2;
+
+        pictoform.at<Vec3b>(i, j+1)[0] = (tone % 2) * 255;
+        tone /= 2;
+        pictoform.at<Vec3b>(i, j+1)[1] = (tone % 2) * 255;
+        tone /= 2;
+        pictoform.at<Vec3b>(i, j+1)[2] = (tone % 2) * 255;
+        tone /= 2;
+
+        pictoform.at<Vec3b>(i, j)[0] = (tone % 2) * 255;
+        tone /= 2;
+        pictoform.at<Vec3b>(i, j)[1] = (tone % 2) * 255;
+        tone /= 2;
+        // ---------------------------------------------- //
+
+        // --------------- ID encoding ------------------ //
+        pictoform.at<Vec3b>(i+2, j+2)[0] = (id % 2) * 255;
+        id /= 2;
+        pictoform.at<Vec3b>(i+2, j+2)[1] = (id % 2) * 255;
+        id /= 2;
+        pictoform.at<Vec3b>(i+2, j+2)[2] = (id % 2) * 255;
+        id /= 2;
+
+        pictoform.at<Vec3b>(i+2, j+1)[0] = (id % 2) * 255;
+        id /= 2;
+        pictoform.at<Vec3b>(i+2, j+1)[1] = (id % 2) * 255;
+        id /= 2;
+        pictoform.at<Vec3b>(i+2, j+1)[2] = (id % 2) * 255;
+        id /= 2;
+
+        pictoform.at<Vec3b>(i+2, j)[0] = (id % 2) * 255;
+        id /= 2;
+        pictoform.at<Vec3b>(i+2, j)[1] = (id % 2) * 255;
+        id /= 2;
+        pictoform.at<Vec3b>(i+2, j)[2] = (id % 2) * 255;
+        id /= 2;
+        // ---------------------------------------------- //
+
+        // Silence or note encoding
+        if((*n).isSilence) {
+            pictoform.at<Vec3b>(i+1, j)[0] = 255;
+            pictoform.at<Vec3b>(i+1, j)[1] = 255;
+            pictoform.at<Vec3b>(i+1, j)[2] = 255;
+        } else {
+            pictoform.at<Vec3b>(i+1, j)[0] = 0;
+            pictoform.at<Vec3b>(i+1, j)[1] = 0;
+            pictoform.at<Vec3b>(i+1, j)[2] = 0;
+        }
+
+        // Valid note
+        pictoform.at<Vec3b>(i+1, j+1)[0] = 255;
+        pictoform.at<Vec3b>(i+1, j+1)[1] = 255;
+        pictoform.at<Vec3b>(i+1, j+1)[2] = 255;
+        
+        j += 3;
+        if(j >= pictoform.cols) { j = 1; i += 4; }
+    }
+
+    return pictoform;
+}
+
+list<Note> MezzoUtilities::decode_pictoform(Mat image) {
+    list<Note> notes;
+    int tone = 0;
+    int id = 0;
+    bool isSilence = false;
+    int j = 0;
+    for(int i = 0; i < image.rows; i++) {
+        if( image.at<Vec3b>(i, 0)[1] == 255 ) {
+            j = 1;
+            //cout << "Reading new pictoform row." << endl;
+        } else {
+            for(; j < image.cols; j+=3) {
+                //cout << "(" << i << ", " << j << ")" << endl;
+                if((image.at<Vec3b>(i+1, j+1)[0] == 255) && 
+                    (image.at<Vec3b>(i+1, j+1)[1] == 255) && 
+                    (image.at<Vec3b>(i+1, j+1)[2] == 255)) {
+                    
+                    //cout << "Decoding new note." << endl; 
+
+                    // -------------- Tone decoding ----------------- //
+                    if(image.at<Vec3b>(i, j+2)[0] == 255) tone += (int) pow(2, 0);
+                    if(image.at<Vec3b>(i, j+2)[1] == 255) tone += (int) pow(2, 1);
+                    if(image.at<Vec3b>(i, j+2)[2] == 255) tone += (int) pow(2, 2);
+
+                    if(image.at<Vec3b>(i, j+1)[0] == 255) tone += (int) pow(2, 3);
+                    if(image.at<Vec3b>(i, j+1)[1] == 255) tone += (int) pow(2, 4);
+                    if(image.at<Vec3b>(i, j+1)[2] == 255) tone += (int) pow(2, 5);
+
+                    if(image.at<Vec3b>(i, j)[0] == 255) tone += (int) pow(2, 6);
+                    if(image.at<Vec3b>(i, j)[1] == 255) tone += (int) pow(2, 7);
+                    if(image.at<Vec3b>(i, j)[2] == 255) tone *= -1;
+                    // ---------------------------------------------- //
+
+                    // --------------- ID decoding ------------------ //
+                    if(image.at<Vec3b>(i+2, j+2)[0] == 255) id += (int) pow(2, 0);
+                    if(image.at<Vec3b>(i+2, j+2)[1] == 255) id += (int) pow(2, 1);
+                    if(image.at<Vec3b>(i+2, j+2)[2] == 255) id += (int) pow(2, 2);
+
+                    if(image.at<Vec3b>(i+2, j+1)[0] == 255) id += (int) pow(2, 3);
+                    if(image.at<Vec3b>(i+2, j+1)[1] == 255) id += (int) pow(2, 4);
+                    if(image.at<Vec3b>(i+2, j+1)[2] == 255) id += (int) pow(2, 5);
+
+                    if(image.at<Vec3b>(i+2, j)[0] == 255) id += (int) pow(2, 6);
+                    if(image.at<Vec3b>(i+2, j)[1] == 255) id += (int) pow(2, 7);
+                    if(image.at<Vec3b>(i+2, j)[2] == 255) id += (int) pow(2, 8);
+                    // ---------------------------------------------- //
+
+                    // Silence or note decoding
+                    isSilence = (image.at<Vec3b>(i+1, j)[0] == 255) && 
+                        (image.at<Vec3b>(i+1, j)[1] == 255) && 
+                        (image.at<Vec3b>(i+1, j)[2] == 255);
+
+                    Note decodedNote = Note(0, 0, tone, id, isSilence);
+                    notes.push_back(decodedNote);
+                    tone = 0;
+                    id = 0;
+                }
+            }
+            i += 2;
+        }
+    }
+    return notes;
 }

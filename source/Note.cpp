@@ -27,6 +27,7 @@ Note::Note(int x, int y, int tone, int symbol, bool isSilence) {
 }
 
 void Note::set_note_duration(int symbolId) {
+    (*this).symbolId = symbolId;
     switch (symbolId)
     {
     case CROTCHET_NOTE_ID:

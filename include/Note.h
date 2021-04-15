@@ -46,7 +46,8 @@ public:
     double duration;
     /// Bool to indicate if its a note or a silence.
     bool isSilence;
-    /// List of durations of the different notes and silences.
+    /// ID of the symbol that represents the note.
+    int symbolId;
 
 public:
     /**
@@ -80,6 +81,14 @@ public:
      */
     void set_note_duration(int symbolId);
 
+    /**
+     * Divides the tone in its musical note and scale.
+     * 
+     * @param tone integer representing the tone meassured in half
+     *      spaces.
+     * @return integer array of 2 elements in which the first element
+     *      is the musical note and the second element is the scale.
+     */
     static int* tone_split(int tone);
 };
 
