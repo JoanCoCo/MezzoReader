@@ -12,7 +12,7 @@
 
 #if __APPLE__
     #include <OpenAL/alut.h>
-#elif
+#else
     #include <AL/alut.h>
 #endif
 #include <iostream>

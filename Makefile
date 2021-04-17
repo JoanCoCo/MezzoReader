@@ -8,8 +8,8 @@ ifeq ($(UNAME_S),Darwin)
 	LIBS=-Wl,-rpath,$(HERE)/dependencies/opencv/lib -L$(HERE)/dependencies/opencv/lib -lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_imgcodecs -framework OpenAL
 	CORES := $(shell sysctl -n hw.ncpu)
 else
-	CFLAGS= -std=c++11 -I$(HERE)/dependencies/opencv/include/opencv4 -I$(HERE)/dependencies/openal/include/freealut
-	LIBS=`pkg-config freealut opencv --libs`
+	CFLAGS= -std=c++11 -I$(HERE)/dependencies/opencv/include/opencv4 -I/usr/include/AL
+	LIBS=-Wl,-rpath,$(HERE)/dependencies/opencv/lib -L$(HERE)/dependencies/opencv/lib -lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_imgcodecs -lalut -lopenal
 	CORES := $(shell grep -c ^processor /proc/cpuinfo)
 endif
 
@@ -56,15 +56,11 @@ dependencies:
 	mkdir tmp
 	mkdir dependencies
 	mkdir dependencies/opencv
-	mkdir dependencies/openal
+	sudo apt-get install libopenal-dev
 	curl -L https://github.com/opencv/opencv/archive/4.2.0.zip --output tmp/opencv.tar.gz
-	tar -zxvf tmp/opencv.tar.gz -C ./tmp/
+	unzip tmp/opencv.tar.gz -d tmp/
 	mkdir tmp/opencv-4.2.0/build
 	cd tmp/opencv-4.2.0/build && cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=$(HERE)/dependencies/opencv/ -D INSTALL_C_EXAMPLES=OFF -D BUILD_EXAMPLES=OFF $(HERE)/tmp/opencv-4.2.0/ && make -j$(CORES) && make install
-	curl -L https://github.com/vancegroup/freealut/archive/refs/tags/freealut_1_1_0.tar.gz --output tmp/openal.tar.gz
-	tar -zxvf tmp/openal.tar.gz -C ./tmp/
-	mkdir tmp/freealut-freealut_1_1_0/build
-	cd tmp/freealut-freealut_1_1_0/build && cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=$(HERE)/dependencies/openal/ -DCMAKE_C_FLAGS:STRING="-march=athlon-xp -O2" && make -j$(CORES) && make install
 	rm -r tmp
 endif
 	
