@@ -9,7 +9,7 @@
 
 #if __APPLE__
     #include <OpenAL/alut.h>
-#elif
+#else
     #include <AL/alut.h>
 #endif
 #include <iostream>
@@ -60,7 +60,11 @@ MezzoPlayer::~MezzoPlayer() {
 }
 
 void MezzoPlayer::load_buffer_from_wav_file(int buffer, ALbyte* file) {
-    alutLoadWAVFile(file, &formatAL, &dataAL, &sizeAL, &freqAL);
+    #if __APPLE__
+        alutLoadWAVFile(file, &formatAL, &dataAL, &sizeAL, &freqAL);
+    #else
+        alutLoadWAVFile(file, &formatAL, &dataAL, &sizeAL, &freqAL, nullptr);
+    #endif
     alBufferData(buffers[buffer], formatAL, dataAL, sizeAL, freqAL);
     alutUnloadWAV(formatAL, dataAL, sizeAL, freqAL);
 }
