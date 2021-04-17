@@ -7,3 +7,5 @@ MezzoReader
 /templates/.DS_Store
 /.vscode/
 pentagrama_analizado.png
+/dependencies/
+/tmp/
