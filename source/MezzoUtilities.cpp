@@ -328,14 +328,14 @@ list<Note> MezzoUtilities::extract_notes(Mat image, Staff staff, bool verbose) {
 
 void MezzoUtilities::show_wait_destroy(const char* winname, cv::Mat img) {
     imshow(winname, img);
-    moveWindow(winname, 500, 0);
+    moveWindow(winname, 0, 0);
     waitKey(0);
     destroyWindow(winname);
 }
 
 void MezzoUtilities::show_wait_time_destroy(const char* winname, cv::Mat img) {
     imshow(winname, img);
-    moveWindow(winname, 500, 0);
+    moveWindow(winname, 0, 0);
     waitKey(1);
     destroyWindow(winname);
 }
