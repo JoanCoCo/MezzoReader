@@ -131,7 +131,18 @@ int main(int argc, char** argv)
                 cv::line(results, p1, p2, Scalar(19,201,198), 2);
             }
 
+            if(visualModeOn) {
+                #if __APPLE__
+                    namedWindow("Reading...", WINDOW_NORMAL);
+                #else
+                    namedWindow("Reading...", WINDOW_AUTOSIZE);
+                    moveWindow("Reading...", 0, 0);
+                #endif
+            }
+            
             list<Note> notes = MezzoUtilities::extract_notes_v2(gray, *s, visualModeOn);
+            
+            if(visualModeOn) destroyWindow("Reading...");
 
             for(std::list<Note>::iterator n = notes.begin(); n != notes.end(); n++) {
                 MezzoUtilities::draw_note(&results, *n, *s);
@@ -149,13 +160,20 @@ int main(int argc, char** argv)
 
         if(playModeOn) {
             MezzoPlayer* player = new MezzoPlayer(); 
-
+            #if __APPLE__
+                namedWindow("Playing...", WINDOW_NORMAL);
+            #else
+                namedWindow("Playing...", WINDOW_AUTOSIZE);
+                moveWindow("Playing...", 0, 0);
+            #endif
             for(std::list<Note>::iterator n = allNotesList.begin(); n != allNotesList.end(); n++) {
                 Mat view = src.clone();
                 MezzoUtilities::draw_note(&view, *n, *(staffsFound.begin()));
-                MezzoUtilities::show_wait_time_destroy("Playing...", view);
+                imshow("Playing...", view);
+                waitKey(1);
                 player->play(*n);
             }
+            destroyWindow("Playing...");
             player->stop();
             delete player;
         }

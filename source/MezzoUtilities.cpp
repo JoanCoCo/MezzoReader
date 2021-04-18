@@ -327,16 +327,27 @@ list<Note> MezzoUtilities::extract_notes(Mat image, Staff staff, bool verbose) {
 }
 
 void MezzoUtilities::show_wait_destroy(const char* winname, cv::Mat img) {
+    namedWindow(winname, WINDOW_AUTOSIZE);
     imshow(winname, img);
+#if __APPLE__
+    moveWindow(winname, 500, 0);
+#else
     moveWindow(winname, 0, 0);
+#endif
     waitKey(0);
     destroyWindow(winname);
 }
 
 void MezzoUtilities::show_wait_time_destroy(const char* winname, cv::Mat img) {
+    namedWindow(winname, WINDOW_AUTOSIZE);
     imshow(winname, img);
-    moveWindow(winname, 0, 0);
+#if __APPLE__
+    moveWindow(winname, 500, 0);
     waitKey(1);
+#else
+    moveWindow(winname, 0, 0);
+    waitKey(10);
+#endif
     destroyWindow(winname);
 }
 
@@ -484,7 +495,6 @@ list<Note> MezzoUtilities::extract_notes_v2(Mat image, Staff staff, bool visual)
                 MezzoUtilities::draw_note(&gOut, lastN, staff, true);
             }
             if(!sliderIsCreated) {
-                namedWindow("Reading...", WINDOW_NORMAL);
                 createTrackbar("Speed", "Reading...", &speed, MAX_DELAY - 1, slider_changed);
                 sliderIsCreated = true;
             }
