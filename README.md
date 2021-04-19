@@ -16,7 +16,7 @@
  Once the dependencies have been correctly installed, MezzoReader can be compiled by executing on the project folder the command **$ make**.
  
  ## Use
- MezzoReader's interface can be consulted by executing **$ ./MezzoReader -h**, and corresponds with the following extract:
+ MezzoReader's interface can be consulted by executing **$ ./MezzoReader -h**, and it corresponds with the following extract:
  ```
  Usage: MezzoReader [params] 
 
