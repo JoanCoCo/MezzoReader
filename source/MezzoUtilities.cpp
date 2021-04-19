@@ -699,59 +699,61 @@ list<Note> MezzoUtilities::decode_pictoform(Mat image) {
     int id = 0;
     bool isSilence = false;
     int j = 0;
-    for(int i = 0; i < image.rows; i++) {
-        if( image.at<Vec3b>(i, 0)[1] == 255 ) {
-            j = 1;
-            //cout << "Reading new pictoform row." << endl;
-        } else {
-            for(; j < image.cols; j+=3) {
-                //cout << "(" << i << ", " << j << ")" << endl;
-                if((image.at<Vec3b>(i+1, j+1)[0] == 255) && 
-                    (image.at<Vec3b>(i+1, j+1)[1] == 255) && 
-                    (image.at<Vec3b>(i+1, j+1)[2] == 255)) {
-                    
-                    //cout << "Decoding new note." << endl; 
+    if(image.at<Vec3b>(0, 0)[0] == 255 && image.at<Vec3b>(0, 0)[1] == 255 && image.at<Vec3b>(0, 0)[1] == 255) {
+        for(int i = 0; i < image.rows; i++) {
+            if( image.at<Vec3b>(i, 0)[1] == 255 ) {
+                j = 1;
+                //cout << "Reading new pictoform row." << endl;
+            } else {
+                for(; j < image.cols; j+=3) {
+                    //cout << "(" << i << ", " << j << ")" << endl;
+                    if((image.at<Vec3b>(i+1, j+1)[0] == 255) && 
+                        (image.at<Vec3b>(i+1, j+1)[1] == 255) && 
+                        (image.at<Vec3b>(i+1, j+1)[2] == 255)) {
+                        
+                        //cout << "Decoding new note." << endl; 
 
-                    // -------------- Tone decoding ----------------- //
-                    if(image.at<Vec3b>(i, j+2)[0] == 255) tone += (int) pow(2, 0);
-                    if(image.at<Vec3b>(i, j+2)[1] == 255) tone += (int) pow(2, 1);
-                    if(image.at<Vec3b>(i, j+2)[2] == 255) tone += (int) pow(2, 2);
+                        // -------------- Tone decoding ----------------- //
+                        if(image.at<Vec3b>(i, j+2)[0] == 255) tone += (int) pow(2, 0);
+                        if(image.at<Vec3b>(i, j+2)[1] == 255) tone += (int) pow(2, 1);
+                        if(image.at<Vec3b>(i, j+2)[2] == 255) tone += (int) pow(2, 2);
 
-                    if(image.at<Vec3b>(i, j+1)[0] == 255) tone += (int) pow(2, 3);
-                    if(image.at<Vec3b>(i, j+1)[1] == 255) tone += (int) pow(2, 4);
-                    if(image.at<Vec3b>(i, j+1)[2] == 255) tone += (int) pow(2, 5);
+                        if(image.at<Vec3b>(i, j+1)[0] == 255) tone += (int) pow(2, 3);
+                        if(image.at<Vec3b>(i, j+1)[1] == 255) tone += (int) pow(2, 4);
+                        if(image.at<Vec3b>(i, j+1)[2] == 255) tone += (int) pow(2, 5);
 
-                    if(image.at<Vec3b>(i, j)[0] == 255) tone += (int) pow(2, 6);
-                    if(image.at<Vec3b>(i, j)[1] == 255) tone += (int) pow(2, 7);
-                    if(image.at<Vec3b>(i, j)[2] == 255) tone *= -1;
-                    // ---------------------------------------------- //
+                        if(image.at<Vec3b>(i, j)[0] == 255) tone += (int) pow(2, 6);
+                        if(image.at<Vec3b>(i, j)[1] == 255) tone += (int) pow(2, 7);
+                        if(image.at<Vec3b>(i, j)[2] == 255) tone *= -1;
+                        // ---------------------------------------------- //
 
-                    // --------------- ID decoding ------------------ //
-                    if(image.at<Vec3b>(i+2, j+2)[0] == 255) id += (int) pow(2, 0);
-                    if(image.at<Vec3b>(i+2, j+2)[1] == 255) id += (int) pow(2, 1);
-                    if(image.at<Vec3b>(i+2, j+2)[2] == 255) id += (int) pow(2, 2);
+                        // --------------- ID decoding ------------------ //
+                        if(image.at<Vec3b>(i+2, j+2)[0] == 255) id += (int) pow(2, 0);
+                        if(image.at<Vec3b>(i+2, j+2)[1] == 255) id += (int) pow(2, 1);
+                        if(image.at<Vec3b>(i+2, j+2)[2] == 255) id += (int) pow(2, 2);
 
-                    if(image.at<Vec3b>(i+2, j+1)[0] == 255) id += (int) pow(2, 3);
-                    if(image.at<Vec3b>(i+2, j+1)[1] == 255) id += (int) pow(2, 4);
-                    if(image.at<Vec3b>(i+2, j+1)[2] == 255) id += (int) pow(2, 5);
+                        if(image.at<Vec3b>(i+2, j+1)[0] == 255) id += (int) pow(2, 3);
+                        if(image.at<Vec3b>(i+2, j+1)[1] == 255) id += (int) pow(2, 4);
+                        if(image.at<Vec3b>(i+2, j+1)[2] == 255) id += (int) pow(2, 5);
 
-                    if(image.at<Vec3b>(i+2, j)[0] == 255) id += (int) pow(2, 6);
-                    if(image.at<Vec3b>(i+2, j)[1] == 255) id += (int) pow(2, 7);
-                    if(image.at<Vec3b>(i+2, j)[2] == 255) id += (int) pow(2, 8);
-                    // ---------------------------------------------- //
+                        if(image.at<Vec3b>(i+2, j)[0] == 255) id += (int) pow(2, 6);
+                        if(image.at<Vec3b>(i+2, j)[1] == 255) id += (int) pow(2, 7);
+                        if(image.at<Vec3b>(i+2, j)[2] == 255) id += (int) pow(2, 8);
+                        // ---------------------------------------------- //
 
-                    // Silence or note decoding
-                    isSilence = (image.at<Vec3b>(i+1, j)[0] == 255) && 
-                        (image.at<Vec3b>(i+1, j)[1] == 255) && 
-                        (image.at<Vec3b>(i+1, j)[2] == 255);
+                        // Silence or note decoding
+                        isSilence = (image.at<Vec3b>(i+1, j)[0] == 255) && 
+                            (image.at<Vec3b>(i+1, j)[1] == 255) && 
+                            (image.at<Vec3b>(i+1, j)[2] == 255);
 
-                    Note decodedNote = Note(0, 0, tone, id, isSilence);
-                    notes.push_back(decodedNote);
-                    tone = 0;
-                    id = 0;
+                        Note decodedNote = Note(0, 0, tone, id, isSilence);
+                        notes.push_back(decodedNote);
+                        tone = 0;
+                        id = 0;
+                    }
                 }
+                i += 2;
             }
-            i += 2;
         }
     }
     return notes;

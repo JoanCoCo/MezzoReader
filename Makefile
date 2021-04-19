@@ -2,14 +2,15 @@ IDIR=include
 CC=g++
 UNAME_S := $(shell uname -s)
 HERE := $(shell pwd)
+VERSION=v.0.1
 
 ifeq ($(UNAME_S),Darwin)
 	CFLAGS= -std=c++11 -I$(HERE)/dependencies/opencv/include/opencv4
-	LIBS=-Wl,-rpath,$(HERE)/dependencies/opencv/lib -L$(HERE)/dependencies/opencv/lib -lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_imgcodecs -framework OpenAL
+	LIBS=-Wl,-rpath,./dependencies/opencv/lib -L./dependencies/opencv/lib -lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_imgcodecs -framework OpenAL
 	CORES := $(shell sysctl -n hw.ncpu)
 else
-	CFLAGS= -std=c++11 -I$(HERE)/dependencies/opencv/include/opencv4 -I/usr/include/AL
-	LIBS=-Wl,-rpath,$(HERE)/dependencies/opencv/lib -L$(HERE)/dependencies/opencv/lib -lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_imgcodecs -lalut -lopenal
+	CFLAGS= -std=c++11 -I./dependencies/opencv/include/opencv4 -I/usr/include/AL
+	LIBS=-Wl,-rpath,./dependencies/opencv/lib -L./dependencies/opencv/lib -lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_imgcodecs -lalut -lopenal
 	CORES := $(shell grep -c ^processor /proc/cpuinfo)
 endif
 
@@ -64,5 +65,25 @@ dependencies:
 	rm -r tmp
 endif
 	
+.PHONY: release
 
-
+release:
+	make clean
+	make
+	mkdir $(VERSION)
+	cp MezzoReader $(VERSION)/MezzoReader
+	cp -r sounds $(VERSION)/sounds
+	rm -r $(VERSION)/sounds/flute
+	cp -r templates $(VERSION)/templates
+	mkdir $(VERSION)/images
+	cp images/Star\ wars\ Flauta-1.jpeg $(VERSION)/images/star_wars.jpeg
+	cp images/notation.png $(VERSION)/images/notation.png
+	cp images/notes.png $(VERSION)/images/notes.png
+	cp images/scanned/when_im_gone.jpg $(VERSION)/images/when_im_gone.jpg
+	mkdir $(VERSION)/dependencies
+	mkdir $(VERSION)/dependencies/opencv
+	mkdir $(VERSION)/dependencies/opencv/lib
+	cp dependencies/opencv/lib/libopencv_core.4.2.0.dylib $(VERSION)/dependencies/opencv/lib/libopencv_core.4.2.0.dylib
+	cp dependencies/opencv/lib/libopencv_imgproc.4.2.0.dylib $(VERSION)/dependencies/opencv/lib/libopencv_imgproc.4.2.0.dylib
+	cp dependencies/opencv/lib/libopencv_highgui.4.2.0.dylib $(VERSION)/dependencies/opencv/lib/libopencv_highgui.4.2.0.dylib
+	cp dependencies/opencv/lib/libopencv_imgcodecs.4.2.0.dylib $(VERSION)/dependencies/opencv/lib/libopencv_imgcodecs.4.2.0.dylib

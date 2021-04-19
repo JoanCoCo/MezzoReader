@@ -231,9 +231,22 @@ public:
      */
     static void draw_note(Mat* image, Note note, Staff staff, bool showDescription = false);
 
-
+    /**
+     * Generates an image encoding the melody contained in a list
+     * of notes.
+     * 
+     * @param notes list of notes to be encoded.
+     * @return cv::Mat image encoding the melody (pictoform).
+     */
     static Mat encode_pictoform(list<Note> notes);
 
+    /**
+     * Generate a sequence of notes from the contents of an image
+     * containing a pictoform.
+     * 
+     * @param image pictoform that encodes a melody.
+     * @return list of notes containing the melody.
+     */
     static list<Note> decode_pictoform(Mat image);
 };
 
