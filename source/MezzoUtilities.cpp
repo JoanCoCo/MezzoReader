@@ -148,7 +148,7 @@ list<Staff> MezzoUtilities::extract_all_staffs ( Mat image , bool adaptative, in
                     if(c == 0) {
                         staffs.push_back(Staff(staffLines, 0, (*std::next(j, 1) - staffLines[4])/2));
                     } else if (c == numOfStaffs - 1) {
-                        staffs.push_back(Staff(staffLines, (staffLines[0] - *std::prev(j, 5))/2, INT_MAX));
+                        staffs.push_back(Staff(staffLines, (staffLines[0] - *std::prev(j, 5))/2, image.rows - 1));
                     } else {
                         staffs.push_back(Staff(staffLines, (staffLines[0] - *std::prev(j, 5))/2, (*std::next(j, 1) - staffLines[4])/2));
                     }
