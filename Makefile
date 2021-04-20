@@ -87,3 +87,10 @@ release:
 	cp dependencies/opencv/lib/libopencv_imgproc.4.2.0.dylib $(VERSION)/dependencies/opencv/lib/libopencv_imgproc.4.2.0.dylib
 	cp dependencies/opencv/lib/libopencv_highgui.4.2.0.dylib $(VERSION)/dependencies/opencv/lib/libopencv_highgui.4.2.0.dylib
 	cp dependencies/opencv/lib/libopencv_imgcodecs.4.2.0.dylib $(VERSION)/dependencies/opencv/lib/libopencv_imgcodecs.4.2.0.dylib
+	cp dependencies/opencv/lib/libopencv_videoio.4.2.0.dylib $(VERSION)/dependencies/opencv/lib/libopencv_videoio.4.2.0.dylib
+	cp -a dependencies/opencv/lib/libopencv_core.4.2.dylib $(VERSION)/dependencies/opencv/lib/libopencv_core.4.2.dylib
+	cp -a dependencies/opencv/lib/libopencv_imgproc.4.2.dylib $(VERSION)/dependencies/opencv/lib/libopencv_imgproc.4.2.dylib
+	cp -a dependencies/opencv/lib/libopencv_highgui.4.2.dylib $(VERSION)/dependencies/opencv/lib/libopencv_highgui.4.2.dylib
+	cp -a dependencies/opencv/lib/libopencv_imgcodecs.4.2.dylib $(VERSION)/dependencies/opencv/lib/libopencv_imgcodecs.4.2.dylib
+	cp -a dependencies/opencv/lib/libopencv_videoio.4.2.dylib $(VERSION)/dependencies/opencv/lib/libopencv_videoio.4.2.dylib
+	
