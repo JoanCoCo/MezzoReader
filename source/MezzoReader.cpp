@@ -23,7 +23,7 @@ using namespace cv;
 bool visualModeOn;
 bool playModeOn;
 
-bool adaptativeMode;
+bool adaptiveMode;
 int expectedLines = 0;
 float adaptativePresition = 0.0f;
 
@@ -38,8 +38,8 @@ int main(int argc, char** argv)
         "{i input | images/notation.png | Input image.}"
         "{v visual | <none> | Visual mode.}" 
         "{p play | <none> | Play music after the analysis.}" 
-        "{a staffs | <none> | Adaptative mode give then number of staffs\n\t\tcontained in the image.}"
-        "{n precision | 3 | Precision for the adaptative mode as 10e-n.}"
+        "{a staffs | <none> | Adaptive mode given the number of staffs\n\t\tcontained in the image.}"
+        "{n precision | 3 | Precision for the adaptive mode as 10e-n.}"
         "{o output | pentagrama_analizado.png | Output image.}"
         "{e encode | <none> | Save the extracted melody as pictoform.}"
         "{d decode | <none> | Load a melody from a pictoform}");
@@ -53,8 +53,8 @@ int main(int argc, char** argv)
     string outName = parser.get<String>("o");
     visualModeOn = parser.has("v");
     playModeOn = parser.has("p");
-    adaptativeMode = parser.has("a");
-    if(adaptativeMode) {
+    adaptiveMode = parser.has("a");
+    if(adaptiveMode) {
         adaptativePresition = parser.get<float>("n");
         expectedLines = parser.get<int>("a") * 5;
     }
@@ -98,11 +98,11 @@ int main(int argc, char** argv)
         
         list<Staff> staffsFound;
 
-        if(adaptativeMode) {
+        if(adaptiveMode) {
             cout << "Adaptative mode is on." << endl;
             cout << "The expected number of lines is " << expectedLines << "." << endl;
             cout << "The precision to be used is 10e-" << (int) adaptativePresition << "." << endl;
-            staffsFound = MezzoUtilities::extract_all_staffs(bw, adaptativeMode, expectedLines, adaptativePresition);
+            staffsFound = MezzoUtilities::extract_all_staffs(bw, adaptiveMode, expectedLines, adaptativePresition);
         } else {
             staffsFound = MezzoUtilities::extract_all_staffs(bw);
         }

@@ -77,21 +77,21 @@ list<int> MezzoUtilities::filter_horizontal_lines ( list<int> lines) {
     return result;
 }
 
-list<Staff> MezzoUtilities::extract_all_staffs ( Mat image , bool adaptative, int expectedLines, float precision ) {
+list<Staff> MezzoUtilities::extract_all_staffs ( Mat image , bool adaptive, int expectedLines, float precision ) {
     list<Staff> staffs;
     list<int> lines;
     float percent = 0.0f;
 
-    if(adaptative) {
+    if(adaptive) {
         percent = 100.0f;
     } else {
         percent = 70.0f;
     }
     
     int fastSteps = 2;
-    bool endAdaptativeBehaviour = false;
+    bool endAdaptiveBehaviour = false;
     do {
-        if(adaptative) {
+        if(adaptive) {
             switch (fastSteps)
             {
             case 2:
@@ -112,9 +112,9 @@ list<Staff> MezzoUtilities::extract_all_staffs ( Mat image , bool adaptative, in
         lines = MezzoUtilities::find_horizontal_lines(image, percent);
         lines = MezzoUtilities::filter_horizontal_lines(lines);
 
-        endAdaptativeBehaviour = lines.size() == expectedLines || percent < 1.0f;
+        endAdaptiveBehaviour = lines.size() == expectedLines || percent < 1.0f;
 
-        if(adaptative && !endAdaptativeBehaviour) {
+        if(adaptive && !endAdaptiveBehaviour) {
             if(lines.size() > expectedLines && fastSteps > 0) {
                 if(fastSteps == 2) {
                     percent *= 2.0f;
@@ -123,12 +123,12 @@ list<Staff> MezzoUtilities::extract_all_staffs ( Mat image , bool adaptative, in
                 }
                 fastSteps--;
             } else if(fastSteps == 0) {
-                endAdaptativeBehaviour = lines.size() >= expectedLines;
+                endAdaptiveBehaviour = lines.size() >= expectedLines;
             }
         }
-    } while(adaptative && !endAdaptativeBehaviour);
+    } while(adaptive && !endAdaptiveBehaviour);
 
-    if(adaptative) {
+    if(adaptive) {
         cout << endl;
         (lines.size() != expectedLines) ? 
             cout << "Adaptative process failed with " << percent << "%." << endl : 

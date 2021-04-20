@@ -110,16 +110,16 @@ public:
      * Gets all the staffs contained on an image.
      * 
      * @param image cv::Mat image to be analized.
-     * @param adaptative optional bool to activate the adaptative 
+     * @param adaptive optional bool to activate the adaptive 
      *      staff extraction. It is false by default.
      * @param epectedLines optional number of lines expected to be 
      *      found by the adaptative mode. Caution, it is 0 by default.
      * @param precision optional float n that indicates de precision 
-     *      of the smaller steps of the adaptative behaviour as 10e-n.
+     *      of the smaller steps of the adaptive behaviour as 10e-n.
      *      It is 3 by default.
      * @return list of the staffs found of the image.
      */
-    static list<Staff> extract_all_staffs ( Mat image, bool adaptative = false, int expectedLines = 0, float precision = 3.0f );
+    static list<Staff> extract_all_staffs ( Mat image, bool adaptive = false, int expectedLines = 0, float precision = 3.0f );
 
     /**
      * Gets all the notes contained on the staff of an image.

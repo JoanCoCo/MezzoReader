@@ -25,7 +25,7 @@
          ./MezzoReader -i=images/notes.png -o=analysed_image.png -p -v 
          ./MezzoReader -a=2 -ap=5
      -a, --staffs (value:<none>)
-         Adaptative mode give then number of staffs
+         Adaptive mode given the number of staffs
          contained in the image.
      -d, --decode (value:<none>)
          Load a melody from a pictoform
@@ -34,7 +34,7 @@
      -i, --input (value:images/notation.png)
          Input image.
      -n, --precision (value:3)
-         Precision for the adaptative mode as 10e-n.
+         Precision for the adaptive mode as 10e-n.
      -o, --output (value:pentagrama_analizado.png)
          Output image.
      -p, --play (value:<none>)
@@ -45,7 +45,7 @@
  ```
  With the `-i` parameter you can provide and image to be analyzed by MezzoReader. The parameter `-v` will allow seing the analysis process in real time, while the `-p` option will allow the system to play the found melody after the analysis.
  
- Options `-a` and `-n` are used for the so called *adaptative mode*. In this mode, the parameter `-a` indicates how many staff the provided music sheet image contains, and the system will try to adapt its internal parameters to found the given number of staffs in the image. This option is recommended when the system can't find the staffs inside an image with the normal parameters. However, it must be taken in account that on the process of trying to adapt MezzoReader's paramaters that accuracy of the system can be highly lowered down and that *adaptative mode* doesn't ensure that the given number of staffs will be found.
+ Options `-a` and `-n` are used for the so called *adaptive mode*. In this mode, the parameter `-a` indicates how many staff the provided music sheet image contains, and the system will try to adapt its internal parameters to found the given number of staffs in the image. This option is recommended when the system can't find the staffs inside an image with the normal parameters. However, it must be taken in account that on the process of trying to adapt MezzoReader's paramaters that accuracy of the system can be highly lowered down and that *adaptive mode* doesn't ensure that the given number of staffs will be found.
  
  Finally, options `-e` and `-d` are used for dealing with *pictoforms*. *Pictoforms* are images that codify the notes and silences that form a monophonic melody. MezzoReader can write the recognized melody into a *pictoform* by using the `-e` option and can read and play the sounds contained on a *pictoform* by using the `-d` parameter. Take in account that the `-d` parameter has preference over the rest of the parameters, causing the system to ignore all the others when `-d` is present.
  
