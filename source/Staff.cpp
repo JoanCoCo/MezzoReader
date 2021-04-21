@@ -24,6 +24,7 @@ Staff::Staff(int *l, int ul, int ll) {
     spaceBetweenLines = get_space_between_lines();
     upperLimit = std::max(lines[0] - 5 * spaceBetweenLines, ul);
     lowerLimit = std::min(lines[4] + 5 * spaceBetweenLines, ll);
+    averageLineWidth = 1;
 }
 
 int Staff::get_space_between_lines() {

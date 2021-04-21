@@ -33,6 +33,8 @@ private:
     int lowerLimit;
     /// Integer that represents the average space between lines.
     int spaceBetweenLines;
+    /// Float that represents the average line width.
+    float averageLineWidth;
 
 public:
 
@@ -85,6 +87,20 @@ public:
      * @return integer representing the lower limit.
      */
     int get_lower_limit() { return lowerLimit; }
+
+    /**
+     * Obtains the average line width of the staff.
+     * 
+     * @return float representing the average line width.
+     */
+    float get_line_width() { return averageLineWidth; }
+
+    /**
+     * Modifies the average line width of the staff.
+     * 
+     * @param w the average width of the lines.
+     */
+    void set_line_width(float w) { averageLineWidth = w; }
 };
 
 #endif

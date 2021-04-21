@@ -88,6 +88,9 @@ list<Staff> MezzoUtilities::extract_all_staffs ( Mat image , bool adaptive, int 
         percent = 70.0f;
     }
     
+    int originalNumberOfLines = 1;
+    float averageLineWidth = 1.0f;
+
     int fastSteps = 2;
     bool endAdaptiveBehaviour = false;
     do {
@@ -110,7 +113,9 @@ list<Staff> MezzoUtilities::extract_all_staffs ( Mat image , bool adaptive, int 
         lines.clear();
 
         lines = MezzoUtilities::find_horizontal_lines(image, percent);
+        originalNumberOfLines = lines.size();
         lines = MezzoUtilities::filter_horizontal_lines(lines);
+        averageLineWidth = (float) originalNumberOfLines / (float) lines.size();
 
         endAdaptiveBehaviour = lines.size() == expectedLines || percent < 1.0f;
 
@@ -146,14 +151,22 @@ list<Staff> MezzoUtilities::extract_all_staffs ( Mat image , bool adaptive, int 
             if(i == 5) {
                 if(numOfStaffs > 1) {
                     if(c == 0) {
-                        staffs.push_back(Staff(staffLines, 0, (*std::next(j, 1) - staffLines[4])/2));
+                        Staff stf = Staff(staffLines, 0, (*std::next(j, 1) - staffLines[4])/2);
+                        stf.set_line_width(averageLineWidth);
+                        staffs.push_back(stf);
                     } else if (c == numOfStaffs - 1) {
-                        staffs.push_back(Staff(staffLines, (staffLines[0] - *std::prev(j, 5))/2, image.rows - 1));
+                        Staff stf = Staff(staffLines, (staffLines[0] - *std::prev(j, 5))/2, image.rows - 1);
+                        stf.set_line_width(averageLineWidth);
+                        staffs.push_back(stf);
                     } else {
-                        staffs.push_back(Staff(staffLines, (staffLines[0] - *std::prev(j, 5))/2, (*std::next(j, 1) - staffLines[4])/2));
+                        Staff stf = Staff(staffLines, (staffLines[0] - *std::prev(j, 5))/2, (*std::next(j, 1) - staffLines[4])/2);
+                        stf.set_line_width(averageLineWidth);
+                        staffs.push_back(stf);
                     }
                 } else {
-                    staffs.push_back(Staff(staffLines, 0, image.rows - 1));
+                    Staff stf = Staff(staffLines, 0, image.rows - 1);
+                    stf.set_line_width(averageLineWidth);
+                    staffs.push_back(stf);
                 }
                 i = 0;
                 c++;
@@ -448,7 +461,7 @@ Vec3i MezzoUtilities::find_most_suitable_template_from(Symbol *symbols, int len,
         cvtColor(temp, temp, COLOR_BGR2GRAY);
         int margin = 2;
         int hr = symbol.get_appropiate_pixel_scale(h);
-        resize(temp, temp, Size(temp.cols * (hr + margin) / temp.rows, (hr + margin)));
+        resize(temp, temp, Size(temp.cols * (hr + margin) / temp.rows, (hr + margin))/*, 0.0, 0.0, INTER_AREA*/);
         if(temp.rows <= image.rows && temp.cols <= image.cols) {
             Mat results;
             matchTemplate(image, temp, results, TM_CCORR_NORMED);
@@ -481,8 +494,12 @@ list<Note> MezzoUtilities::extract_notes_v2(Mat image, Staff staff, bool visual)
     start = Point(0, 0);
     end = Point(1, staffImage.rows - 1);
     bool sliderIsCreated = false;
-    int barAreaHeight = (int) (roundf(0.8005 * logf(staff.get_space_between_lines()) + 1.6667f));
+    int barAreaHeight = (int)(roundf(0.8005 * logf(staff.get_space_between_lines()) + 1.6667f));
+    float lineSpaceRatio = staff.get_line_width() / (float) staff.get_space_between_lines();
+    //cout << "Line width: " << staff.get_line_width() << endl;
     //cout << "Bar area height: " << barAreaHeight << endl;
+    //cout << "Space between lines: " << staff.get_space_between_lines() << endl;
+    //cout << "Ratio: " << lineSpaceRatio << endl;
     while(end.x < staffImage.cols) {
         if(visual) {
             Mat gOut = image.clone();
@@ -505,7 +522,6 @@ list<Note> MezzoUtilities::extract_notes_v2(Mat image, Staff staff, bool visual)
         Mat cell = staffImage(Rect(start, end));
         int templateFound, cellX, cellY;
         Vec3i findings = MezzoUtilities::find_most_suitable_template(cell, staff.get_space_between_lines());
-        //cout << "Space between lines: " << staff.get_space_between_lines() << endl;
         templateFound = findings[0];
         cellX = findings[1];
         cellY = findings[2];
@@ -537,6 +553,13 @@ list<Note> MezzoUtilities::extract_notes_v2(Mat image, Staff staff, bool visual)
                     default:
                         Mat binaryCell;
                         adaptiveThreshold(~interestZone, binaryCell, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY, 15, -2);
+                        if(lineSpaceRatio > 0.2f) {
+                            for(int i = 0; i < 5; i++) {
+                                cv::line(binaryCell, Point(0, staff.get_line(i) - staff.get_upper_limit()), 
+                                Point(binaryCell.cols - 1, staff.get_line(i) - staff.get_upper_limit()), 
+                                Scalar(1, 1, 1), std::max((int) 1, 0));
+                            }
+                        }
                         Mat hStructure = getStructuringElement(MORPH_RECT, Size(binaryCell.cols / 2, barAreaHeight /*staff.get_space_between_lines() / 2 - 1*/));
                         //MezzoUtilities::show_wait_destroy("b", binaryCell);
                         erode(binaryCell, binaryCell, hStructure, Point(-1, -1));

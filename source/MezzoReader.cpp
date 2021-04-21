@@ -125,6 +125,8 @@ int main(int argc, char** argv)
         }
 
         for(std::list<Staff>::iterator s = staffsFound.begin(); s != staffsFound.end(); s++) {
+            //cout << "Average line width: " << (*s).get_line_width() << endl;
+
             for(int i = 0; i < 5; i++) {
                 Point p1(0, (*s).get_line(i));
                 Point p2(results.cols - 1, (*s).get_line(i));
@@ -134,6 +136,7 @@ int main(int argc, char** argv)
             if(visualModeOn) {
                 #if __APPLE__
                     namedWindow("Reading...", WINDOW_NORMAL);
+                    moveWindow("Reading...", 100, 0);
                 #else
                     namedWindow("Reading...", WINDOW_AUTOSIZE);
                     moveWindow("Reading...", 0, 0);
@@ -162,6 +165,7 @@ int main(int argc, char** argv)
             MezzoPlayer* player = new MezzoPlayer(); 
             #if __APPLE__
                 namedWindow("Playing...", WINDOW_NORMAL);
+                moveWindow("Playing...", 100, 0);
             #else
                 namedWindow("Playing...", WINDOW_AUTOSIZE);
                 moveWindow("Playing...", 0, 0);
