@@ -80,6 +80,7 @@ release:
 	cp images/notation.png $(VERSION)/images/notation.png
 	cp images/notes.png $(VERSION)/images/notes.png
 	cp images/scanned/when_im_gone.jpg $(VERSION)/images/when_im_gone.jpg
+	cp images/a_dormir.jpeg $(VERSION)/images/a_dormir.jpeg
 	mkdir $(VERSION)/dependencies
 	mkdir $(VERSION)/dependencies/opencv
 	mkdir $(VERSION)/dependencies/opencv/lib
