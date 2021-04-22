@@ -34,7 +34,7 @@ int main(int argc, char** argv)
 {
 
     CommandLineParser parser(argc, argv, 
-        "{help h usage ? | | Usage examples: \n\t\t./MezzoReader -i=images/notes.png -o=analysed_image.png -p -v \n\t\t./MezzoReader -a=2 -ap=5}"
+        "{help h usage ? | | Usage examples: \n\t\t./MezzoReader -i=images/notes.png -o=analysed_image.png -p -v \n\t\t./MezzoReader -i=images/when_im_gone.jpg -a=7 -n=5}"
         "{i input | images/notation.png | Input image.}"
         "{v visual | <none> | Visual mode.}" 
         "{p play | <none> | Play music after the analysis.}" 

@@ -10,7 +10,7 @@
  4. Finally, install the dependencies of the project. For that, execute on the project folder the command `$ make dependencies`. **IMPORTANT:** it is required for this command to work properly that the path where you saved the project folder **doesn't contain wite spaces**. Take in account that this command will proceed to download the OpenCV 4.2.0 library and install it on the project folder, so it can take a while. If something fails during the installation, remove the **tmp** and **dependencies** folders inside the project folder before trying to execute the command again.
  
  ### Linux
- MezzoReader uses the OpenAL SDK that can be installed on the system through the official distribution Linux. It is also necessary to install the OpenCV 4.2.0 library **on the project folder**. For this purpose you can execute the command `$ make dependencies` on the project folder. This command will verify that the OpenAL SDK is installed, and will install it if it is not (requieres superuser privileges). It also will proceed to download the OpenCV 4.2.0 library and install it on the project folder, so it can take a while. **IMPORTANT:** it is required for this command to work properly that the path where you saved the project folder **doesn't contain wite spaces**. If something fails during the installation, remove the **tmp** and **dependencies** folders inside the project folder before trying to execute the command again.
+ MezzoReader uses the OpenAL SDK that can be installed on the system through the official distribution Linux. It is also necessary to install the OpenCV 4.2.0 library **on the project folder**. For this purpose you can execute the command `$ make dependencies` on the project folder. This command will verify that the OpenAL SDK is installed, and will install it if it is not (requieres superuser privileges). It also will proceed to download the OpenCV 4.2.0 library and install it on the project folder, so it can take a while. **IMPORTANT:** it is required for this command to work properly that the path where you saved the project folder **doesn't contain wite spaces**. Also it is necessary to have the **cmake** command line tool installed. You can follow the steps described in the point one of the macOS installation section to install it if you need it. If something fails during the installation of the dependencies, remove the **tmp** and **dependencies** folders inside the project folder before trying to execute the command again.
  
  ## Compilation
  Once the dependencies have been correctly installed, MezzoReader can be compiled by executing on the project folder the command `$ make`.
@@ -23,7 +23,7 @@
      -?, -h, --help, --usage (value:true)
          Usage examples: 
          ./MezzoReader -i=images/notes.png -o=analysed_image.png -p -v 
-         ./MezzoReader -a=2 -ap=5
+         ./MezzoReader -i=images/when_im_gone.jpg -a=7 -n=5
      -a, --staffs (value:<none>)
          Adaptive mode given the number of staffs
          contained in the image.
