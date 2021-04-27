@@ -67,6 +67,7 @@ endif
 	
 .PHONY: release
 
+ifeq ($(UNAME_S),Darwin)
 release:
 	make clean
 	make
@@ -94,4 +95,32 @@ release:
 	cp -a dependencies/opencv/lib/libopencv_highgui.4.2.dylib $(VERSION)/dependencies/opencv/lib/libopencv_highgui.4.2.dylib
 	cp -a dependencies/opencv/lib/libopencv_imgcodecs.4.2.dylib $(VERSION)/dependencies/opencv/lib/libopencv_imgcodecs.4.2.dylib
 	cp -a dependencies/opencv/lib/libopencv_videoio.4.2.dylib $(VERSION)/dependencies/opencv/lib/libopencv_videoio.4.2.dylib
-	
+else
+release:
+	make clean
+	make
+	mkdir $(VERSION)
+	cp MezzoReader $(VERSION)/MezzoReader
+	cp -r sounds $(VERSION)/sounds
+	rm -r $(VERSION)/sounds/flute
+	cp -r templates $(VERSION)/templates
+	mkdir $(VERSION)/images
+	cp images/Star\ wars\ Flauta-1.jpeg $(VERSION)/images/star_wars.jpeg
+	cp images/notation.png $(VERSION)/images/notation.png
+	cp images/notes.png $(VERSION)/images/notes.png
+	cp images/scanned/when_im_gone.jpg $(VERSION)/images/when_im_gone.jpg
+	cp images/a_dormir.jpeg $(VERSION)/images/a_dormir.jpeg
+	mkdir $(VERSION)/dependencies
+	mkdir $(VERSION)/dependencies/opencv
+	mkdir $(VERSION)/dependencies/opencv/lib
+	cp dependencies/opencv/lib/libopencv_core.so.4.2.0 $(VERSION)/dependencies/opencv/lib/libopencv_core.so.4.2.0
+	cp dependencies/opencv/lib/libopencv_imgproc.so.4.2.0 $(VERSION)/dependencies/opencv/lib/libopencv_imgproc.so.4.2.0
+	cp dependencies/opencv/lib/libopencv_highgui.so.4.2.0 $(VERSION)/dependencies/opencv/lib/libopencv_highgui.so.4.2.0
+	cp dependencies/opencv/lib/libopencv_imgcodecs.so.4.2.0 $(VERSION)/dependencies/opencv/lib/libopencv_imgcodecs.so.4.2.0
+	cp dependencies/opencv/lib/libopencv_videoio.so.4.2.0 $(VERSION)/dependencies/opencv/lib/libopencv_videoio.so.4.2.0
+	cp -a dependencies/opencv/lib/libopencv_core.so.4.2 $(VERSION)/dependencies/opencv/lib/libopencv_core.so.4.2
+	cp -a dependencies/opencv/lib/libopencv_imgproc.so.4.2 $(VERSION)/dependencies/opencv/lib/libopencv_imgproc.so.4.2
+	cp -a dependencies/opencv/lib/libopencv_highgui.so.4.2 $(VERSION)/dependencies/opencv/lib/libopencv_highgui.so.4.2
+	cp -a dependencies/opencv/lib/libopencv_imgcodecs.so.4.2 $(VERSION)/dependencies/opencv/lib/libopencv_imgcodecs.so.4.2
+	cp -a dependencies/opencv/lib/libopencv_videoio.so.4.2 $(VERSION)/dependencies/opencv/lib/libopencv_videoio.so.4.2
+endif
