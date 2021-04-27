@@ -50,10 +50,15 @@
  Finally, options `-e` and `-d` are used for dealing with *pictoforms*. *Pictoforms* are images that codify the notes and silences that form a monophonic melody. MezzoReader can write the recognized melody into a *pictoform* by using the `-e` option and can read and play the sounds contained on a *pictoform* by using the `-d` parameter. Take in account that the `-d` parameter has preference over the rest of the parameters, causing the system to ignore all the others when `-d` is present.
 
 As a demonstration, it is recommended to run:
+
 `$ ./MezzoReader -i=images/notes.png -o=analysed_image.png -p -v`
+
 `$ ./MezzoReader -i=images/when_im_gone.jpg -a=7 -n=5`
+
 `$ ./MezzoReader -i=images/a_dormir.jpeg`
+
 `$ ./MezzoReader -v -p -e=pictoform_notacion.png`
+
 `$ ./MezzoReader -d=pictoform_notacion.png`
  
  ## Limitations
